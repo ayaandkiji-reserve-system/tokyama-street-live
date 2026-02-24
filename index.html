@@ -281,6 +281,34 @@ main{max-width:980px;margin:0 auto;padding:28px 18px 80px;}
   .two-col{grid-template-columns:1fr;} .period-row{flex-direction:column;align-items:flex-start;}
   .period-sep{margin-top:0;}
 }
+/* =========================
+   iPhoneでカレンダー右端が切れる対策
+   原因: .cal-day の margin が合計幅を超える
+   ========================= */
+
+/* カレンダー全体がスマホ幅を超えないように */
+.calendar-card { width: 100%; max-width: 100%; }
+
+/* 重要：marginを廃止して、gapで間隔を作る */
+.cal-grid{
+  padding: 8px;                /* 余白は少し確保 */
+  gap: 6px;                    /* ← ここで間隔を作る */
+  background: var(--gray-50);
+}
+.cal-day{
+  margin: 0 !important;        /* ← 横はみ出しの元を消す */
+  width: 100%;
+  min-width: 0;                /* これが無いとiOSで詰まることがある */
+}
+
+/* さらに小さい端末向けにgap/余白を詰める */
+@media (max-width: 420px){
+  .cal-grid{ padding: 6px; gap: 4px; }
+  .cal-weekday{ font-size: .7rem; padding: 10px 0; }
+}
+
+/* 念のため横スクロール発生を止める */
+body{ overflow-x: hidden; }
 </style>
 </head>
 <body>
