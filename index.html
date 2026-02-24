@@ -1,0 +1,1083 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>チーム未来｜ライブスペース予約</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+<style>
+:root {
+  --sky: #3b9edd;
+  --sky-light: #7ec8f0;
+  --sky-deep: #1a6fa8;
+  --sky-pale: #e8f5fd;
+  --sky-mid: #c4e8f8;
+  --gray-50: #f8fafc;
+  --gray-100: #f0f4f8;
+  --gray-200: #e2e8f0;
+  --gray-300: #b0c4d8;
+  --gray-500: #6b8299;
+  --gray-700: #3d5166;
+  --gray-900: #1a2b3a;
+  --green: #10b981;
+  --green-pale: #ecfdf5;
+  --green-mid: #a7f3d0;
+  --orange: #f59e0b;
+  --orange-pale: #fffbeb;
+  --red: #ef4444;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Noto Sans JP', sans-serif; background: linear-gradient(160deg,#dff0fa 0%,#f0f8ff 40%,#e8f4fd 100%); min-height: 100vh; color: var(--gray-900); }
+
+/* HEADER */
+header {
+  background: linear-gradient(135deg, var(--sky-deep) 0%, var(--sky) 60%, var(--sky-light) 100%);
+  padding: 26px 32px 22px; display: flex; align-items: center; justify-content: space-between;
+  box-shadow: 0 4px 20px rgba(59,158,221,.25); position: relative; overflow: hidden;
+}
+header::before { content:''; position:absolute; width:300px; height:300px; background:rgba(255,255,255,.06); border-radius:50%; right:-80px; top:-120px; }
+header::after  { content:''; position:absolute; width:180px; height:180px; background:rgba(255,255,255,.08); border-radius:50%; right:120px; top:-60px; }
+.logo { display:flex; align-items:center; gap:14px; }
+.logo-icon { width:46px; height:46px; background:rgba(255,255,255,.2); border-radius:14px; display:flex; align-items:center; justify-content:center; backdrop-filter:blur(10px); border:1px solid rgba(255,255,255,.3); font-size:22px; }
+.logo-text h1 { font-family:'DM Serif Display',serif; color:#fff; font-size:1.4rem; letter-spacing:.02em; }
+.logo-text p  { color:rgba(255,255,255,.85); font-size:.72rem; font-weight:300; letter-spacing:.08em; }
+.header-badge { background:rgba(255,255,255,.18); border:1px solid rgba(255,255,255,.35); color:#fff; font-size:.72rem; padding:6px 14px; border-radius:20px; backdrop-filter:blur(10px); font-weight:500; }
+
+main { max-width:980px; margin:0 auto; padding:28px 18px 80px; }
+
+/* LINE SETTINGS */
+.line-settings { background:#fff; border-radius:14px; padding:16px 20px; margin-bottom:20px; box-shadow:0 2px 12px rgba(59,158,221,.08); border:1px solid var(--sky-mid); display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+.line-icon { width:34px; height:34px; background:#06C755; border-radius:9px; display:flex; align-items:center; justify-content:center; color:#fff; font-size:17px; flex-shrink:0; }
+.line-settings label { font-size:.77rem; color:var(--gray-500); font-weight:600; white-space:nowrap; }
+.line-settings input { border:1.5px solid var(--sky-mid); border-radius:8px; padding:8px 12px; font-size:.84rem; flex:1; min-width:180px; outline:none; transition:border-color .2s; font-family:inherit; }
+.line-settings input:focus { border-color:var(--sky); }
+.line-settings input::placeholder { color:var(--gray-300); }
+.line-status { font-size:.74rem; color:var(--gray-500); padding:5px 11px; background:var(--gray-50); border-radius:8px; border:1px solid var(--gray-100); white-space:nowrap; }
+.line-status.active { color:#06C755; background:#f0fdf4; border-color:#bbf7d0; }
+
+/* TABS */
+.tab-nav { display:flex; gap:4px; background:#fff; border-radius:14px; padding:5px; margin-bottom:20px; box-shadow:0 2px 12px rgba(59,158,221,.08); border:1px solid var(--sky-mid); }
+.tab-btn { flex:1; padding:11px 8px; border:none; border-radius:10px; cursor:pointer; font-family:inherit; font-size:.82rem; font-weight:600; color:var(--gray-500); background:transparent; transition:all .2s; display:flex; align-items:center; justify-content:center; gap:6px; }
+.tab-btn.active { background:linear-gradient(135deg,var(--sky-deep),var(--sky)); color:#fff; box-shadow:0 3px 12px rgba(59,158,221,.3); }
+.badge { background:var(--orange); color:#fff; font-size:.64rem; min-width:17px; height:17px; border-radius:9px; display:inline-flex; align-items:center; justify-content:center; padding:0 4px; }
+.tab-btn.active .badge { background:rgba(255,255,255,.3); }
+
+/* CALENDAR */
+.calendar-card { background:#fff; border-radius:18px; box-shadow:0 4px 28px rgba(59,158,221,.1); overflow:hidden; border:1px solid var(--sky-mid); }
+.cal-header { background:linear-gradient(135deg,#1e7fc0,var(--sky)); padding:18px 26px; display:flex; align-items:center; justify-content:space-between; }
+.cal-nav { display:flex; align-items:center; gap:14px; }
+.cal-nav button { width:34px; height:34px; border-radius:50%; border:1.5px solid rgba(255,255,255,.4); background:rgba(255,255,255,.15); color:#fff; font-size:1rem; cursor:pointer; transition:background .2s; display:flex; align-items:center; justify-content:center; }
+.cal-nav button:hover { background:rgba(255,255,255,.3); }
+.cal-month { font-family:'DM Serif Display',serif; color:#fff; font-size:1.45rem; min-width:155px; text-align:center; }
+.cal-legend { display:flex; gap:14px; }
+.legend-item { display:flex; align-items:center; gap:5px; font-size:.7rem; color:rgba(255,255,255,.9); }
+.legend-dot { width:9px; height:9px; border-radius:50%; }
+.legend-dot.available { background:rgba(255,255,255,.9); }
+.legend-dot.partial   { background:rgba(255,255,255,.5); border:1.5px solid rgba(255,255,255,.7); }
+.legend-dot.full      { background:rgba(255,255,255,.2); }
+.cal-weekdays { display:grid; grid-template-columns:repeat(7,1fr); background:var(--sky-pale); border-bottom:1px solid var(--sky-mid); }
+.cal-weekday { text-align:center; padding:11px 0; font-size:.73rem; font-weight:700; color:var(--sky-deep); letter-spacing:.06em; }
+.cal-weekday.sun { color:#e07070; } .cal-weekday.sat { color:var(--sky); }
+.cal-grid { display:grid; grid-template-columns:repeat(7,1fr); padding:6px; background:var(--gray-50); }
+.cal-day { aspect-ratio:1; display:flex; flex-direction:column; align-items:center; justify-content:center; border-radius:11px; margin:3px; cursor:pointer; transition:all .18s; background:#fff; border:1.5px solid transparent; gap:4px; }
+.cal-day:hover:not(.empty):not(.past):not(.closed) { transform:translateY(-2px); box-shadow:0 6px 18px rgba(59,158,221,.2); border-color:var(--sky-light); }
+.cal-day.empty  { background:transparent; border-color:transparent; cursor:default; }
+.cal-day.past   { opacity:.35; cursor:not-allowed; }
+.cal-day.today  { border-color:var(--sky); box-shadow:0 0 0 3px rgba(59,158,221,.15); }
+.cal-day.full   { background:var(--gray-50); border-color:var(--gray-100); }
+.cal-day.full .day-num { color:var(--gray-300); }
+.cal-day.closed { background:var(--gray-50); border-color:var(--gray-100); cursor:not-allowed; opacity:.5; }
+.day-num { font-size:.96rem; font-weight:600; color:var(--gray-700); line-height:1; }
+.cal-day.sun .day-num { color:#e07070; } .cal-day.sat .day-num { color:var(--sky-deep); } .cal-day.today .day-num { color:var(--sky-deep); }
+.slot-dots { display:flex; gap:2px; }
+.slot-dot { width:6px; height:6px; border-radius:50%; background:var(--sky-mid); }
+.slot-dot.booked { background:var(--sky); }
+.slot-dot.closed-dot { background:var(--gray-200); }
+
+/* ===== PANELS ===== */
+.panel { background:#fff; border-radius:18px; padding:22px 26px; box-shadow:0 2px 18px rgba(59,158,221,.08); border:1px solid var(--sky-mid); }
+.panel-title { display:flex; align-items:center; gap:9px; font-size:.93rem; font-weight:700; color:var(--sky-deep); margin-bottom:16px; }
+
+/* ===== SLOT MANAGEMENT ===== */
+.slot-mgmt-header { display:flex; align-items:center; gap:12px; margin-bottom:18px; flex-wrap:wrap; }
+.slot-mgmt-header label { font-size:.8rem; font-weight:600; color:var(--gray-500); }
+.slot-mgmt-header input[type=date] { border:1.5px solid var(--sky-mid); border-radius:9px; padding:8px 12px; font-size:.84rem; font-family:inherit; outline:none; color:var(--gray-900); }
+.slot-mgmt-header input[type=date]:focus { border-color:var(--sky); }
+.slot-mgmt-header .hint { font-size:.72rem; color:var(--gray-300); }
+
+.slot-toggle-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:10px; }
+@media(min-width:600px){ .slot-toggle-grid { grid-template-columns:repeat(4,1fr); } }
+.slot-toggle-card { border:1.5px solid var(--sky-mid); border-radius:12px; padding:14px 14px; background:var(--sky-pale); transition:all .2s; cursor:pointer; text-align:center; user-select:none; }
+.slot-toggle-card.closed-card { background:var(--gray-50); border-color:var(--gray-200); opacity:.65; }
+.slot-toggle-time { font-size:.82rem; font-weight:700; color:var(--sky-deep); margin-bottom:4px; }
+.slot-toggle-card.closed-card .slot-toggle-time { color:var(--gray-400,#94a3b8); }
+.slot-toggle-label { font-size:.72rem; color:var(--gray-500); margin-bottom:10px; }
+.slot-toggle-btn { display:inline-flex; align-items:center; gap:5px; padding:5px 14px; border-radius:20px; font-size:.73rem; font-weight:700; font-family:inherit; border:none; cursor:pointer; transition:all .15s; }
+.btn-open  { background:linear-gradient(135deg,var(--sky-deep),var(--sky)); color:#fff; box-shadow:0 2px 8px rgba(59,158,221,.3); }
+.btn-close { background:var(--gray-100); color:var(--gray-500); }
+
+.bulk-actions { display:flex; gap:8px; margin-top:14px; }
+.bulk-btn { padding:8px 18px; border:1.5px solid var(--sky-mid); border-radius:9px; background:#fff; color:var(--sky-deep); font-size:.77rem; font-weight:700; font-family:inherit; cursor:pointer; transition:all .15s; }
+.bulk-btn:hover { background:var(--sky-pale); }
+.bulk-btn.danger { border-color:#fca5a5; color:var(--red); }
+.bulk-btn.danger:hover { background:#fef2f2; }
+
+/* ===== ARTIST PANEL ===== */
+.artist-cards { display:flex; flex-direction:column; gap:10px; }
+.artist-card { display:flex; align-items:center; gap:13px; padding:13px 15px; border-radius:12px; border:1.5px solid var(--sky-mid); background:var(--sky-pale); }
+.artist-card.pending-card { background:var(--orange-pale); border-color:#fde68a; }
+.artist-avatar { width:40px; height:40px; border-radius:50%; background:linear-gradient(135deg,var(--sky-deep),var(--sky-light)); display:flex; align-items:center; justify-content:center; color:#fff; font-weight:700; font-size:.96rem; flex-shrink:0; }
+.artist-card.pending-card .artist-avatar { background:linear-gradient(135deg,#d97706,var(--orange)); }
+.artist-card-info { flex:1; min-width:0; }
+.artist-card-name { font-weight:700; font-size:.87rem; color:var(--gray-900); }
+.artist-card-sub  { font-size:.71rem; color:var(--gray-500); margin-top:2px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.artist-actions { display:flex; gap:6px; flex-shrink:0; }
+.btn-approve { padding:6px 13px; background:var(--green); color:#fff; border:none; border-radius:8px; cursor:pointer; font-family:inherit; font-size:.73rem; font-weight:700; transition:background .15s; }
+.btn-approve:hover { background:#059669; }
+.btn-reject  { padding:6px 11px; background:#fff; color:var(--red); border:1.5px solid #fca5a5; border-radius:8px; cursor:pointer; font-family:inherit; font-size:.73rem; font-weight:700; }
+.btn-reject:hover { background:#fef2f2; }
+.status-approved { font-size:.71rem; font-weight:700; padding:4px 11px; border-radius:20px; background:var(--green-pale); color:var(--green); border:1px solid var(--green-mid); white-space:nowrap; }
+
+/* ===== RES LIST ===== */
+.res-list { display:flex; flex-direction:column; gap:8px; }
+.res-item { display:flex; align-items:center; gap:11px; padding:11px 13px; background:var(--sky-pale); border-radius:10px; border:1px solid var(--sky-mid); font-size:.81rem; }
+.res-date { font-weight:700; color:var(--sky-deep); min-width:58px; }
+.res-time { color:var(--gray-500); min-width:88px; font-size:.77rem; }
+.res-name { flex:1; font-weight:600; color:var(--gray-700); }
+.res-cancel-btn { background:none; border:1px solid #fca5a5; color:var(--red); font-size:.71rem; padding:4px 9px; border-radius:9px; cursor:pointer; font-family:inherit; }
+.res-cancel-btn:hover { background:#fef2f2; }
+.no-data { text-align:center; color:var(--gray-300); font-size:.84rem; padding:24px 0; }
+
+/* ===== MODAL ===== */
+.modal-overlay { display:none; position:fixed; inset:0; background:rgba(15,40,65,.5); backdrop-filter:blur(4px); z-index:1000; align-items:center; justify-content:center; padding:16px; }
+.modal-overlay.show { display:flex; }
+@keyframes slideUp { from{transform:translateY(28px);opacity:0} to{transform:translateY(0);opacity:1} }
+.modal { background:#fff; border-radius:22px; width:100%; max-width:620px; max-height:92vh; overflow-y:auto; box-shadow:0 24px 56px rgba(10,40,80,.3); animation:slideUp .22s ease; }
+.modal-head { background:linear-gradient(135deg,#1e7fc0,var(--sky)); padding:22px 26px 18px; border-radius:22px 22px 0 0; color:#fff; display:flex; justify-content:space-between; align-items:flex-start; }
+.modal-date { font-family:'DM Serif Display',serif; font-size:1.55rem; }
+.modal-date-sub { font-size:.76rem; color:rgba(255,255,255,.8); margin-top:2px; }
+.modal-close { width:30px; height:30px; border-radius:50%; background:rgba(255,255,255,.2); border:none; color:#fff; font-size:1.05rem; cursor:pointer; display:flex; align-items:center; justify-content:center; }
+.modal-close:hover { background:rgba(255,255,255,.35); }
+.modal-body { padding:22px 26px; }
+.slots-title { font-size:.78rem; font-weight:700; color:var(--gray-500); letter-spacing:.08em; margin-bottom:11px; }
+.slot-list { display:flex; flex-direction:column; gap:9px; margin-bottom:18px; }
+.slot-item { display:flex; align-items:center; gap:13px; padding:13px 15px; border-radius:11px; border:1.5px solid var(--sky-mid); background:var(--sky-pale); }
+.slot-item.booked-slot { background:var(--gray-50); border-color:var(--gray-100); }
+.slot-item.closed-slot { background:var(--gray-50); border-color:var(--gray-200); opacity:.55; }
+.slot-time  { font-weight:700; font-size:.88rem; color:var(--sky-deep); min-width:90px; }
+.slot-item.booked-slot .slot-time, .slot-item.closed-slot .slot-time { color:var(--gray-500); }
+.slot-info  { flex:1; }
+.slot-label { font-size:.79rem; font-weight:600; color:var(--gray-700); }
+.slot-sublabel { font-size:.7rem; color:var(--gray-500); }
+.slot-action-btn { padding:7px 17px; border-radius:19px; font-size:.76rem; font-weight:700; cursor:pointer; border:none; transition:all .15s; font-family:inherit; white-space:nowrap; }
+.btn-reserve { background:linear-gradient(135deg,var(--sky),var(--sky-light)); color:#fff; box-shadow:0 3px 10px rgba(59,158,221,.3); }
+.btn-reserve:hover { transform:translateY(-1px); }
+.btn-cancel  { background:#fff; color:var(--red); border:1.5px solid #fca5a5; }
+.btn-cancel:hover { background:#fef2f2; }
+.btn-disabled { background:var(--gray-100); color:var(--gray-300); cursor:default; font-size:.7rem; }
+
+/* STEP INDICATOR */
+.step-indicator { display:flex; align-items:center; margin-bottom:18px; border-bottom:1.5px solid var(--sky-pale); padding-bottom:15px; }
+.step { display:flex; flex-direction:column; align-items:center; gap:4px; flex:1; }
+.step-circle { width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:.76rem; font-weight:700; background:var(--gray-100); color:var(--gray-300); transition:all .3s; }
+.step.active .step-circle { background:linear-gradient(135deg,var(--sky-deep),var(--sky)); color:#fff; box-shadow:0 3px 10px rgba(59,158,221,.3); }
+.step.done   .step-circle { background:var(--green); color:#fff; }
+.step-label { font-size:.63rem; color:var(--gray-300); font-weight:500; text-align:center; }
+.step.active .step-label { color:var(--sky-deep); font-weight:700; }
+.step.done   .step-label { color:var(--green); }
+.step-line { height:2px; background:var(--gray-100); flex:1; margin-bottom:13px; }
+.step-line.done { background:var(--green); }
+
+/* FORM SECTION */
+.form-section { display:none; }
+.form-section.show { display:block; }
+
+/* TWO COLUMN: SEARCH | NEW ARTIST */
+.two-col { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+@media(max-width:560px){ .two-col { grid-template-columns:1fr; } }
+.col-card { border:1.5px solid var(--sky-mid); border-radius:14px; padding:16px; background:var(--sky-pale); }
+.col-card-title { font-size:.8rem; font-weight:700; color:var(--sky-deep); margin-bottom:12px; display:flex; align-items:center; gap:7px; }
+.col-card-title .subtitle { font-size:.68rem; color:var(--gray-500); font-weight:400; }
+
+.lookup-input { width:100%; border:1.5px solid var(--sky-mid); border-radius:9px; padding:9px 12px; font-size:.83rem; font-family:inherit; outline:none; transition:border-color .2s; background:#fff; margin-bottom:9px; }
+.lookup-input:focus { border-color:var(--sky); box-shadow:0 0 0 3px rgba(59,158,221,.1); }
+.btn-lookup { width:100%; padding:9px; background:var(--sky); color:#fff; border:none; border-radius:9px; cursor:pointer; font-family:inherit; font-size:.82rem; font-weight:700; transition:background .15s; }
+.btn-lookup:hover { background:var(--sky-deep); }
+
+.artist-found-card { margin-top:10px; padding:11px 13px; background:var(--green-pale); border:1.5px solid var(--green-mid); border-radius:10px; display:none; }
+.artist-found-card.show { display:block; }
+.artist-found-row { display:flex; align-items:center; gap:9px; }
+.artist-found-icon { font-size:1.3rem; }
+.artist-found-info { flex:1; }
+.artist-found-name { font-weight:700; color:var(--gray-900); font-size:.85rem; }
+.artist-found-sub  { font-size:.7rem; color:var(--gray-500); margin-top:1px; }
+.artist-found-badge { background:var(--green); color:#fff; font-size:.65rem; font-weight:700; padding:3px 9px; border-radius:11px; white-space:nowrap; }
+.artist-found-badge.pending-badge { background:var(--orange); }
+.btn-proceed { margin-top:10px; width:100%; padding:9px; background:linear-gradient(135deg,var(--sky-deep),var(--sky)); color:#fff; border:none; border-radius:9px; cursor:pointer; font-family:inherit; font-size:.82rem; font-weight:700; box-shadow:0 3px 10px rgba(59,158,221,.3); transition:all .2s; }
+.btn-proceed:hover { transform:translateY(-1px); }
+.btn-proceed:disabled { background:var(--gray-200); color:var(--gray-400,#94a3b8); cursor:default; transform:none; box-shadow:none; }
+
+.artist-not-found { margin-top:9px; padding:9px 12px; background:var(--orange-pale); border:1.5px solid #fde68a; border-radius:9px; display:none; font-size:.75rem; color:#92400e; line-height:1.5; }
+.artist-not-found.show { display:block; }
+
+/* NEW ARTIST COL */
+.new-col { overflow:hidden; }
+.new-col-inner { display:flex; flex-direction:column; gap:0; }
+.form-group { margin-bottom:10px; }
+.form-group label { display:block; font-size:.75rem; font-weight:600; color:var(--gray-700); margin-bottom:5px; }
+.required { color:var(--sky); font-size:.68rem; margin-left:3px; }
+.optional  { color:var(--gray-300); font-size:.66rem; margin-left:3px; }
+.form-group input, .form-group textarea, .form-group select { width:100%; border:1.5px solid var(--sky-mid); border-radius:9px; padding:9px 12px; font-size:.83rem; font-family:inherit; outline:none; transition:border-color .2s,box-shadow .2s; background:#fff; color:var(--gray-900); }
+.form-group input:focus, .form-group textarea:focus { border-color:var(--sky); box-shadow:0 0 0 3px rgba(59,158,221,.1); }
+.form-group textarea { resize:vertical; min-height:60px; }
+.form-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+
+/* SNS — pick at least one */
+.sns-required-note { font-size:.7rem; color:var(--orange); font-weight:600; margin-bottom:8px; display:flex; align-items:center; gap:5px; }
+.sns-grid { display:flex; flex-direction:column; gap:7px; }
+.sns-input-wrap { display:flex; align-items:center; border:1.5px solid var(--sky-mid); border-radius:9px; background:#fff; overflow:hidden; transition:border-color .2s; }
+.sns-input-wrap:focus-within { border-color:var(--sky); box-shadow:0 0 0 3px rgba(59,158,221,.1); }
+.sns-input-wrap.has-value { border-color:var(--green); }
+.sns-prefix { padding:8px 10px; background:var(--sky-pale); font-size:.75rem; font-weight:700; color:var(--sky-deep); white-space:nowrap; border-right:1.5px solid var(--sky-mid); }
+.sns-input-wrap input { border:none; flex:1; padding:8px 10px; font-size:.81rem; outline:none; font-family:inherit; }
+
+/* Video/LINE section */
+.video-or { display:grid; grid-template-columns:1fr 1fr; gap:9px; }
+.video-option { border:1.5px solid var(--sky-mid); border-radius:10px; padding:10px 12px; background:#fff; transition:border-color .2s; }
+.video-option.selected { border-color:var(--sky); background:var(--sky-pale); }
+.video-option-label { font-size:.7rem; font-weight:700; color:var(--sky-deep); margin-bottom:5px; }
+.video-option input { width:100%; border:1.5px solid var(--sky-mid); border-radius:7px; padding:7px 9px; font-size:.79rem; font-family:inherit; outline:none; background:var(--sky-pale); transition:border-color .2s; }
+.video-option input:focus { border-color:var(--sky); }
+
+.btn-register { width:100%; padding:11px; background:linear-gradient(135deg,#d97706,var(--orange)); color:#fff; border:none; border-radius:10px; cursor:pointer; font-family:inherit; font-size:.85rem; font-weight:700; transition:all .2s; margin-top:10px; box-shadow:0 4px 14px rgba(245,158,11,.3); }
+.btn-register:hover { transform:translateY(-1px); box-shadow:0 6px 18px rgba(245,158,11,.4); }
+
+.pending-inline { padding:12px 14px; background:var(--orange-pale); border:1.5px solid #fde68a; border-radius:10px; margin-top:10px; display:none; }
+.pending-inline.show { display:block; }
+.pending-inline-title { font-weight:700; color:#92400e; font-size:.83rem; margin-bottom:4px; }
+.pending-inline-text  { font-size:.74rem; color:#78350f; line-height:1.6; }
+
+/* STEP2 – reserve confirm */
+.step2-artist-card { display:flex; align-items:center; gap:11px; padding:12px 14px; background:var(--green-pale); border:1.5px solid var(--green-mid); border-radius:11px; margin-bottom:14px; }
+.step2-icon { font-size:1.4rem; }
+.step2-info { flex:1; }
+.step2-name { font-weight:700; font-size:.87rem; color:var(--gray-900); }
+.step2-sub  { font-size:.71rem; color:var(--gray-500); margin-top:1px; }
+.btn-submit { width:100%; padding:13px; background:linear-gradient(135deg,var(--sky-deep),var(--sky)); color:#fff; border:none; border-radius:11px; font-size:.91rem; font-weight:700; cursor:pointer; font-family:inherit; transition:all .2s; margin-top:6px; box-shadow:0 4px 14px rgba(59,158,221,.35); letter-spacing:.03em; }
+.btn-submit:hover { transform:translateY(-2px); box-shadow:0 8px 22px rgba(59,158,221,.45); }
+.btn-back { width:100%; margin-top:8px; padding:9px; background:none; border:none; color:var(--gray-500); font-size:.8rem; cursor:pointer; font-family:inherit; }
+
+/* CONFIRM */
+.confirm-overlay { display:none; position:fixed; inset:0; background:rgba(15,40,65,.6); backdrop-filter:blur(4px); z-index:2000; align-items:center; justify-content:center; padding:18px; }
+.confirm-overlay.show { display:flex; }
+.confirm-box { background:#fff; border-radius:18px; padding:30px 26px; max-width:340px; width:100%; box-shadow:0 24px 56px rgba(10,40,80,.3); text-align:center; animation:slideUp .2s ease; }
+.confirm-icon  { font-size:2.3rem; margin-bottom:11px; }
+.confirm-title { font-size:.97rem; font-weight:700; color:var(--gray-900); margin-bottom:7px; }
+.confirm-text  { font-size:.8rem; color:var(--gray-500); line-height:1.6; margin-bottom:22px; white-space:pre-line; }
+.confirm-actions { display:flex; gap:9px; }
+.confirm-actions button { flex:1; padding:11px; border-radius:9px; font-size:.83rem; font-weight:600; cursor:pointer; font-family:inherit; border:none; }
+.btn-no  { background:var(--gray-100); color:var(--gray-700); }
+.btn-yes { background:linear-gradient(135deg,#b91c1c,#ef4444); color:#fff; }
+
+/* TOAST */
+.toast { position:fixed; bottom:30px; left:50%; transform:translateX(-50%) translateY(100px); background:var(--gray-900); color:#fff; padding:13px 22px; border-radius:38px; font-size:.83rem; font-weight:500; z-index:9999; transition:transform .3s cubic-bezier(.34,1.56,.64,1); box-shadow:0 8px 28px rgba(0,0,0,.3); white-space:nowrap; }
+.toast.show    { transform:translateX(-50%) translateY(0); }
+.toast.success { background:linear-gradient(135deg,#059669,#10b981); }
+.toast.cancel  { background:linear-gradient(135deg,#b91c1c,#ef4444); }
+.toast.pending { background:linear-gradient(135deg,#d97706,#f59e0b); }
+.toast.error   { background:linear-gradient(135deg,#b91c1c,#ef4444); }
+
+.divider { display:flex; align-items:center; gap:9px; margin:14px 0 12px; }
+.divider hr { flex:1; border:none; border-top:1.5px solid var(--sky-pale); }
+.divider span { font-size:.71rem; font-weight:700; color:var(--sky-deep); letter-spacing:.06em; white-space:nowrap; }
+
+@media(max-width:600px){
+  header { padding:16px 14px; } .cal-legend { display:none; }
+  main { padding:16px 10px 50px; } .form-row { grid-template-columns:1fr; }
+  .modal-body { padding:16px 16px; } .video-or { grid-template-columns:1fr; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-icon">🎵</div>
+    <div class="logo-text">
+      <h1>チーム未来</h1>
+      <p>STREET LIVE SPACE RESERVATION</p>
+    </div>
+  </div>
+  <div class="header-badge">路上ライブスペース予約</div>
+</header>
+
+<main>
+  <div class="line-settings">
+    <div class="line-icon">💬</div>
+    <label>LINE Notify トークン</label>
+    <input type="text" id="lineToken" placeholder="LINE Notify のトークンを入力してください..." oninput="updateLineStatus()">
+    <div class="line-status" id="lineStatus">未設定</div>
+  </div>
+
+  <div class="tab-nav">
+    <button class="tab-btn active" id="tabCalendar" onclick="switchTab('calendar')">📅 カレンダー予約</button>
+    <button class="tab-btn" id="tabSlots" onclick="switchTab('slots')">🔧 枠管理</button>
+    <button class="tab-btn" id="tabArtists" onclick="switchTab('artists')">
+      🎤 アーティスト管理
+      <span class="badge" id="pendingBadge" style="display:none">0</span>
+    </button>
+    <button class="tab-btn" id="tabReservations" onclick="switchTab('reservations')">📋 予約一覧</button>
+  </div>
+
+  <!-- カレンダー -->
+  <div id="pageCalendar">
+    <div class="calendar-card">
+      <div class="cal-header">
+        <div class="cal-nav">
+          <button onclick="changeMonth(-1)">&#8249;</button>
+          <div class="cal-month" id="calMonthLabel"></div>
+          <button onclick="changeMonth(1)">&#8250;</button>
+        </div>
+        <div class="cal-legend">
+          <div class="legend-item"><div class="legend-dot available"></div>空きあり</div>
+          <div class="legend-item"><div class="legend-dot partial"></div>一部空き</div>
+          <div class="legend-item"><div class="legend-dot full"></div>満枠</div>
+        </div>
+      </div>
+      <div class="cal-weekdays">
+        <div class="cal-weekday sun">日</div><div class="cal-weekday">月</div><div class="cal-weekday">火</div>
+        <div class="cal-weekday">水</div><div class="cal-weekday">木</div><div class="cal-weekday">金</div>
+        <div class="cal-weekday sat">土</div>
+      </div>
+      <div class="cal-grid" id="calGrid"></div>
+    </div>
+  </div>
+
+  <!-- 枠管理 -->
+  <div id="pageSlots" style="display:none">
+    <div class="panel">
+      <div class="panel-title"><span>🔧</span>予約枠のオープン／クローズ管理</div>
+      <div class="slot-mgmt-header">
+        <label>対象日を選択</label>
+        <input type="date" id="slotMgmtDate" onchange="renderSlotMgmt()">
+        <span class="hint">※ 日付を選んで各時間帯のオープン/クローズを切り替えてください</span>
+      </div>
+      <div class="slot-toggle-grid" id="slotToggleGrid">
+        <div class="no-data">日付を選択してください</div>
+      </div>
+      <div class="bulk-actions">
+        <button class="bulk-btn" onclick="bulkOpen()">✅ 全枠オープン</button>
+        <button class="bulk-btn danger" onclick="bulkClose()">🚫 全枠クローズ</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- アーティスト管理 -->
+  <div id="pageArtists" style="display:none">
+    <div class="panel">
+      <div class="panel-title"><span>🎤</span>登録アーティスト一覧</div>
+      <div class="artist-cards" id="artistList"></div>
+    </div>
+  </div>
+
+  <!-- 予約一覧 -->
+  <div id="pageReservations" style="display:none">
+    <div class="panel">
+      <div class="panel-title"><span>📋</span>予約一覧</div>
+      <div class="res-list" id="resList"></div>
+    </div>
+  </div>
+</main>
+
+<!-- 予約モーダル -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModalIfOutside(event)">
+  <div class="modal">
+    <div class="modal-head">
+      <div>
+        <div class="modal-date" id="modalDateLabel"></div>
+        <div class="modal-date-sub" id="modalDateSub"></div>
+      </div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="slots-title">TIME SLOTS</div>
+      <div class="slot-list" id="slotList"></div>
+
+      <div class="form-section" id="formSection">
+        <!-- step indicator -->
+        <div class="step-indicator">
+          <div class="step active" id="step1"><div class="step-circle">1</div><div class="step-label">アーティスト確認</div></div>
+          <div class="step-line" id="stepLine1"></div>
+          <div class="step" id="step2"><div class="step-circle">2</div><div class="step-label">予約情報</div></div>
+          <div class="step-line" id="stepLine2"></div>
+          <div class="step" id="step3"><div class="step-circle">3</div><div class="step-label">完了</div></div>
+        </div>
+
+        <!-- STEP 1: 横並び -->
+        <div id="step1Area">
+          <div class="two-col">
+
+            <!-- 左: 検索 -->
+            <div class="col-card">
+              <div class="col-card-title">🔍 登録済みの方 <span class="subtitle">電話番号 or アーティスト名で検索</span></div>
+              <input class="lookup-input" type="text" id="lookupInput" placeholder="例：090-0000-0000　or　ソラノオト">
+              <button class="btn-lookup" onclick="lookupArtist()">検索する</button>
+
+              <!-- 見つかった -->
+              <div class="artist-found-card" id="artistFound">
+                <div class="artist-found-row">
+                  <div class="artist-found-icon">🎤</div>
+                  <div class="artist-found-info">
+                    <div class="artist-found-name" id="foundName"></div>
+                    <div class="artist-found-sub" id="foundSub"></div>
+                  </div>
+                  <div class="artist-found-badge" id="foundBadge">承認済み</div>
+                </div>
+                <button class="btn-proceed" id="btnProceed" onclick="proceedToStep2()">次へ → 予約情報を入力</button>
+              </div>
+              <!-- 見つからない -->
+              <div class="artist-not-found" id="artistNotFound">
+                ⚠️ 登録が見つかりません。右側のフォームから新規登録してください。
+              </div>
+            </div>
+
+            <!-- 右: 新規登録 -->
+            <div class="col-card new-col">
+              <div class="col-card-title">✨ 初めての方 <span class="subtitle">アーティスト登録＋審査申請</span></div>
+              <div class="new-col-inner" id="newArtistForm">
+                <div class="form-row">
+                  <div class="form-group">
+                    <label>お名前 <span class="required">必須</span></label>
+                    <input type="text" id="fName" placeholder="山田 太郎">
+                  </div>
+                  <div class="form-group">
+                    <label>電話番号 <span class="required">必須</span></label>
+                    <input type="tel" id="fPhone" placeholder="090-0000-0000">
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label>アーティスト名 <span class="required">必須</span></label>
+                  <input type="text" id="fArtist" placeholder="例：ソラノオト">
+                </div>
+                <div class="form-group">
+                  <label>ジャンル <span class="optional">任意</span></label>
+                  <input type="text" id="fGenre" placeholder="例：アコースティック、ダンス">
+                </div>
+
+                <div class="divider"><hr><span>📱 SNS（1つ以上必須）</span><hr></div>
+                <div class="sns-required-note">⚠️ いずれか1つ以上入力してください</div>
+                <div class="sns-grid">
+                  <div class="sns-input-wrap" id="snsWrap_instagram">
+                    <div class="sns-prefix">📸 IG</div>
+                    <input type="text" id="fInstagram" placeholder="@username" oninput="onSnsInput('instagram')">
+                  </div>
+                  <div class="sns-input-wrap" id="snsWrap_tiktok">
+                    <div class="sns-prefix">🎵 TT</div>
+                    <input type="text" id="fTiktok" placeholder="@username or URL" oninput="onSnsInput('tiktok')">
+                  </div>
+                  <div class="sns-input-wrap" id="snsWrap_youtube">
+                    <div class="sns-prefix">▶️ YT</div>
+                    <input type="text" id="fYoutube" placeholder="チャンネルURL" oninput="onSnsInput('youtube')">
+                  </div>
+                  <div class="sns-input-wrap" id="snsWrap_twitter">
+                    <div class="sns-prefix">𝕏 X</div>
+                    <input type="text" id="fTwitter" placeholder="@username" oninput="onSnsInput('twitter')">
+                  </div>
+                </div>
+
+                <div class="divider"><hr><span>🎬 演奏・アート動画</span><hr></div>
+                <div class="video-or">
+                  <div class="video-option" id="videoOptionUrl">
+                    <div class="video-option-label">🔗 動画URL</div>
+                    <input type="url" id="fVideoUrl" placeholder="YouTube/TikTok URL" oninput="onVideoInput('url')">
+                  </div>
+                  <div class="video-option" id="videoOptionLine">
+                    <div class="video-option-label">💬 LINE IDで送る</div>
+                    <input type="text" id="fVideoLineId" placeholder="LINE ID" oninput="onVideoInput('line')">
+                  </div>
+                </div>
+                <div style="font-size:.68rem;color:var(--gray-500);margin-top:6px;line-height:1.5;">※ いずれか1つ入力（LINEの場合スタッフよりご連絡します）</div>
+
+                <div class="divider"><hr><span>💬 LINE ID（予約確定通知用）</span><hr></div>
+                <div class="form-group">
+                  <label>LINE ID <span class="required">必須</span></label>
+                  <input type="text" id="fLineId" placeholder="@lineID（例：@mirai_artist）">
+                  <div style="font-size:.68rem;color:var(--gray-500);margin-top:5px;">承認後の予約確定通知をLINEでお送りします</div>
+                </div>
+
+                <div class="form-group">
+                  <label>自己PR・備考 <span class="optional">任意</span></label>
+                  <textarea id="fNote" placeholder="活動内容・実績など"></textarea>
+                </div>
+
+                <button class="btn-register" onclick="submitNewArtist()">✨ 審査を申請する</button>
+
+                <div class="pending-inline" id="pendingInline">
+                  <div class="pending-inline-title">⏳ 審査申請を受け付けました！</div>
+                  <div class="pending-inline-text">スタッフが確認後、<strong>承認の旨をLINEにてご連絡</strong>します。<br>承認後に改めてご予約ください。</div>
+                </div>
+              </div>
+            </div>
+
+          </div><!-- /two-col -->
+        </div><!-- /step1Area -->
+
+        <!-- STEP 2 -->
+        <div id="step2Area" style="display:none">
+          <div class="step2-artist-card">
+            <div class="step2-icon">🎤</div>
+            <div class="step2-info">
+              <div class="step2-name" id="step2ArtistName"></div>
+              <div class="step2-sub"  id="step2ArtistSub"></div>
+            </div>
+            <div class="artist-found-badge">✅ 承認済み</div>
+          </div>
+          <div class="form-group">
+            <label>備考・当日の演奏内容 <span class="optional">任意</span></label>
+            <textarea id="fReserveNote" placeholder="当日の曲目・セット内容など"></textarea>
+          </div>
+          <button class="btn-submit" onclick="submitReservation()">🎵 この枠を予約確定する</button>
+          <button class="btn-back" onclick="backToStep1()">← 戻る</button>
+        </div>
+
+      </div><!-- /formSection -->
+    </div>
+  </div>
+</div>
+
+<!-- キャンセル確認 -->
+<div class="confirm-overlay" id="confirmOverlay">
+  <div class="confirm-box">
+    <div class="confirm-icon">🗑️</div>
+    <div class="confirm-title" id="confirmTitle"></div>
+    <div class="confirm-text"  id="confirmText"></div>
+    <div class="confirm-actions">
+      <button class="btn-no" onclick="closeConfirm()">もどる</button>
+      <button class="btn-yes" id="confirmYes">キャンセルする</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ===== CONSTANTS =====
+const SLOTS = [
+  { id:'A', time:'10:00〜12:00', label:'午前の部' },
+  { id:'B', time:'13:00〜15:00', label:'昼の部'  },
+  { id:'C', time:'15:00〜17:00', label:'夕方の部' },
+  { id:'D', time:'17:00〜19:00', label:'夜の部'  },
+];
+const WEEKDAYS = ['日','月','火','水','木','金','土'];
+const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+// ===== STATE =====
+let currentYear, currentMonth;
+let selectedDate = null, selectedSlotId = null;
+let pendingCancelKey = null;
+let currentFoundArtistId = null;
+
+// reservations: { id: { id, dateKey, slotId, artistId, name, artistName, phone, lineId, note, createdAt } }
+// artists:      { id: { id, name, phone, artist, genre, instagram, tiktok, youtube, twitter, videoUrl, videoLineId, lineId, note, status, createdAt } }
+// closedSlots:  { "dateKey_slotId": true }  — closed = not available
+let reservations = {}, artists = {}, closedSlots = {};
+
+function load() {
+  reservations = JSON.parse(localStorage.getItem('tm_res')    || '{}');
+  artists      = JSON.parse(localStorage.getItem('tm_artists')|| '{}');
+  closedSlots  = JSON.parse(localStorage.getItem('tm_closed') || '{}');
+}
+function saveRes()     { localStorage.setItem('tm_res',     JSON.stringify(reservations)); }
+function saveArtists() { localStorage.setItem('tm_artists', JSON.stringify(artists)); }
+function saveClosed()  { localStorage.setItem('tm_closed',  JSON.stringify(closedSlots)); }
+
+function init() {
+  load();
+  const now = new Date();
+  currentYear = now.getFullYear();
+  currentMonth = now.getMonth();
+  // default slot-mgmt date to today
+  document.getElementById('slotMgmtDate').value = fmtKey(now.getFullYear(), now.getMonth()+1, now.getDate()).replace(/\//g,'-');
+  renderCalendar();
+  updatePendingBadge();
+}
+
+// ===== TABS =====
+function switchTab(tab) {
+  ['calendar','slots','artists','reservations'].forEach(t => {
+    const pid = 'page' + t.charAt(0).toUpperCase() + t.slice(1);
+    const tid = 'tab'  + t.charAt(0).toUpperCase() + t.slice(1);
+    document.getElementById(pid).style.display = t === tab ? 'block' : 'none';
+    document.getElementById(tid).classList.toggle('active', t === tab);
+  });
+  if (tab === 'artists')      renderArtistList();
+  if (tab === 'reservations') renderResList();
+  if (tab === 'slots')        renderSlotMgmt();
+}
+
+function updatePendingBadge() {
+  const n = Object.values(artists).filter(a => a.status === 'pending').length;
+  const el = document.getElementById('pendingBadge');
+  el.textContent = n; el.style.display = n > 0 ? 'inline-flex' : 'none';
+}
+
+// ===== SLOT MANAGEMENT =====
+function slotKey(dateKey, slotId) { return `${dateKey}_${slotId}`; }
+function isClosed(dateKey, slotId) { return !!closedSlots[slotKey(dateKey, slotId)]; }
+
+function renderSlotMgmt() {
+  const dateVal = document.getElementById('slotMgmtDate').value;
+  if (!dateVal) return;
+  const dateKey = dateVal; // yyyy-mm-dd
+  const grid = document.getElementById('slotToggleGrid');
+  grid.innerHTML = '';
+
+  SLOTS.forEach(slot => {
+    const closed = isClosed(dateKey, slot.id);
+    const card = document.createElement('div');
+    card.className = 'slot-toggle-card' + (closed ? ' closed-card' : '');
+    card.innerHTML = `
+      <div class="slot-toggle-time">${slot.time}</div>
+      <div class="slot-toggle-label">${slot.label}</div>
+      <button class="slot-toggle-btn ${closed ? 'btn-open' : 'btn-close'}"
+        onclick="toggleSlot('${dateKey}','${slot.id}')">
+        ${closed ? '✅ オープンにする' : '🚫 クローズにする'}
+      </button>`;
+    grid.appendChild(card);
+  });
+}
+
+function toggleSlot(dateKey, slotId) {
+  const k = slotKey(dateKey, slotId);
+  if (closedSlots[k]) delete closedSlots[k];
+  else closedSlots[k] = true;
+  saveClosed();
+  renderSlotMgmt();
+  renderCalendar();
+  showToast(closedSlots[slotKey(dateKey, slotId)] ? '🚫 クローズしました' : '✅ オープンにしました');
+}
+
+function bulkOpen() {
+  const dateVal = document.getElementById('slotMgmtDate').value;
+  if (!dateVal) return;
+  SLOTS.forEach(s => delete closedSlots[slotKey(dateVal, s.id)]);
+  saveClosed(); renderSlotMgmt(); renderCalendar();
+  showToast('✅ 全枠をオープンにしました', 'success');
+}
+function bulkClose() {
+  const dateVal = document.getElementById('slotMgmtDate').value;
+  if (!dateVal) return;
+  SLOTS.forEach(s => closedSlots[slotKey(dateVal, s.id)] = true);
+  saveClosed(); renderSlotMgmt(); renderCalendar();
+  showToast('🚫 全枠をクローズしました', 'cancel');
+}
+
+// ===== CALENDAR =====
+function renderCalendar() {
+  document.getElementById('calMonthLabel').textContent = `${currentYear}年 ${currentMonth+1}月`;
+  const grid = document.getElementById('calGrid');
+  grid.innerHTML = '';
+  const firstDay = new Date(currentYear, currentMonth, 1).getDay();
+  const daysInMonth = new Date(currentYear, currentMonth+1, 0).getDate();
+  const today = new Date();
+
+  for (let i = 0; i < firstDay; i++) {
+    const e = document.createElement('div'); e.className = 'cal-day empty'; grid.appendChild(e);
+  }
+  for (let d = 1; d <= daysInMonth; d++) {
+    const date = new Date(currentYear, currentMonth, d);
+    const dateKey = fmtKey(currentYear, currentMonth+1, d);
+    const dayRess = Object.values(reservations).filter(r => r.dateKey === dateKey);
+    const openSlots = SLOTS.filter(s => !isClosed(dateKey, s.id));
+    const dow = date.getDay();
+    const isPast  = date < new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const isToday = date.toDateString() === today.toDateString();
+    const allClosed = openSlots.length === 0;
+
+    let cls = 'cal-day';
+    if (isPast)    cls += ' past';
+    if (isToday)   cls += ' today';
+    if (dow === 0) cls += ' sun';
+    if (dow === 6) cls += ' sat';
+    if (!isPast && allClosed) cls += ' closed';
+    else if (!isPast && !allClosed && dayRess.filter(r => !isClosed(dateKey, r.slotId)).length >= openSlots.length) cls += ' full';
+
+    const el = document.createElement('div');
+    el.className = cls;
+
+    const dotsHtml = SLOTS.map(s => {
+      const c = isClosed(dateKey, s.id) ? ' closed-dot' : (dayRess.some(r=>r.slotId===s.id) ? ' booked' : '');
+      return `<div class="slot-dot${c}"></div>`;
+    }).join('');
+
+    el.innerHTML = `<div class="day-num">${d}</div><div class="slot-dots">${dotsHtml}</div>`;
+    if (!isPast && !allClosed) el.onclick = () => openModal(currentYear, currentMonth+1, d, dow);
+    grid.appendChild(el);
+  }
+}
+
+function changeMonth(delta) {
+  currentMonth += delta;
+  if (currentMonth < 0)  { currentMonth = 11; currentYear--; }
+  if (currentMonth > 11) { currentMonth =  0; currentYear++; }
+  renderCalendar();
+}
+
+// ===== MODAL =====
+function openModal(y, m, d, dow) {
+  selectedDate = { y, m, d, dow };
+  document.getElementById('modalDateLabel').textContent = `${y}年${m}月${d}日（${WEEKDAYS[dow]}）`;
+  document.getElementById('modalDateSub').textContent = MONTHS[m-1];
+  renderModalSlots(fmtKey(y, m, d));
+  closeForm();
+  document.getElementById('modalOverlay').classList.add('show');
+}
+
+function renderModalSlots(dateKey) {
+  const list = document.getElementById('slotList');
+  list.innerHTML = '';
+  const dayRess = Object.values(reservations).filter(r => r.dateKey === dateKey);
+
+  SLOTS.forEach(slot => {
+    const res    = dayRess.find(r => r.slotId === slot.id);
+    const closed = isClosed(dateKey, slot.id);
+    const item   = document.createElement('div');
+    item.className = 'slot-item' + (res ? ' booked-slot' : closed ? ' closed-slot' : '');
+
+    const statusText = closed ? 'クローズ' : (res ? (res.artistName || res.name) : slot.label);
+    const subText    = closed ? '—' : (res ? res.name : '空き枠');
+
+    item.innerHTML = `
+      <div class="slot-time">${slot.time}</div>
+      <div class="slot-info">
+        <div class="slot-label">${statusText}</div>
+        <div class="slot-sublabel">${subText}</div>
+      </div>`;
+
+    const btn = document.createElement('button');
+    btn.className = 'slot-action-btn ';
+    if (closed) {
+      btn.className += 'btn-disabled'; btn.textContent = '受付停止中';
+    } else if (res) {
+      btn.className += 'btn-cancel'; btn.textContent = 'キャンセル';
+      btn.onclick = () => confirmCancel(res.id, res.artistName || res.name, slot.time);
+    } else {
+      btn.className += 'btn-reserve'; btn.textContent = '予約する';
+      btn.onclick = () => openForm(slot);
+    }
+    item.appendChild(btn);
+    list.appendChild(item);
+  });
+}
+
+function closeModal() { document.getElementById('modalOverlay').classList.remove('show'); closeForm(); }
+function closeModalIfOutside(e) { if (e.target === document.getElementById('modalOverlay')) closeModal(); }
+
+// ===== FORM (STEP) =====
+function openForm(slot) {
+  selectedSlotId = slot.id;
+  resetFormUI();
+  document.getElementById('formSection').classList.add('show');
+  setTimeout(() => document.getElementById('formSection').scrollIntoView({ behavior:'smooth', block:'nearest' }), 50);
+}
+function closeForm() {
+  document.getElementById('formSection').classList.remove('show');
+  selectedSlotId = null; currentFoundArtistId = null;
+}
+
+function resetFormUI() {
+  setStep(1);
+  document.getElementById('lookupInput').value = '';
+  document.getElementById('artistFound').classList.remove('show');
+  document.getElementById('artistNotFound').classList.remove('show');
+  document.getElementById('pendingInline').classList.remove('show');
+  document.getElementById('step1Area').style.display = 'block';
+  document.getElementById('step2Area').style.display = 'none';
+  currentFoundArtistId = null;
+  const btn = document.getElementById('btnProceed');
+  btn.disabled = false; btn.style.background = ''; btn.textContent = '次へ → 予約情報を入力';
+
+  ['fName','fPhone','fArtist','fGenre','fInstagram','fTiktok','fYoutube','fTwitter','fVideoUrl','fVideoLineId','fLineId','fNote','fReserveNote'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = '';
+  });
+  ['instagram','tiktok','youtube','twitter'].forEach(s => {
+    document.getElementById('snsWrap_'+s).classList.remove('has-value');
+  });
+  document.getElementById('videoOptionUrl').classList.remove('selected');
+  document.getElementById('videoOptionLine').classList.remove('selected');
+}
+
+function setStep(n) {
+  [1,2,3].forEach(i => {
+    const s = document.getElementById('step'+i);
+    s.classList.remove('active','done');
+    if (i < n) s.classList.add('done');
+    if (i === n) s.classList.add('active');
+  });
+  [1,2].forEach(i => document.getElementById('stepLine'+i).classList.toggle('done', i < n));
+}
+
+// ===== LOOKUP =====
+function lookupArtist() {
+  const q = document.getElementById('lookupInput').value.trim().toLowerCase();
+  if (!q) return;
+  const found = Object.values(artists).find(a =>
+    a.phone.replace(/-/g,'').includes(q.replace(/-/g,'')) ||
+    a.name.toLowerCase().includes(q) ||
+    (a.artist && a.artist.toLowerCase().includes(q))
+  );
+
+  document.getElementById('artistFound').classList.remove('show');
+  document.getElementById('artistNotFound').classList.remove('show');
+  currentFoundArtistId = null;
+  const btn = document.getElementById('btnProceed');
+  btn.disabled = false; btn.style.background = ''; btn.textContent = '次へ → 予約情報を入力';
+
+  if (found) {
+    currentFoundArtistId = found.id;
+    document.getElementById('foundName').textContent = `${found.artist || found.name}（${found.name}）`;
+    document.getElementById('foundSub').textContent  = found.phone + (found.genre ? '　' + found.genre : '');
+    const badge = document.getElementById('foundBadge');
+
+    if (found.status === 'approved') {
+      badge.textContent = '✅ 承認済み';
+      badge.className = 'artist-found-badge';
+      btn.disabled = false; btn.style.background = '';
+      btn.textContent = '次へ → 予約情報を入力';
+    } else {
+      badge.textContent = '⏳ 審査中';
+      badge.className = 'artist-found-badge pending-badge';
+      btn.disabled = true;
+      btn.textContent = '⏳ 審査完了後に予約できます';
+    }
+    document.getElementById('artistFound').classList.add('show');
+  } else {
+    document.getElementById('artistNotFound').classList.add('show');
+  }
+}
+
+function proceedToStep2() {
+  if (!currentFoundArtistId) return;
+  const a = artists[currentFoundArtistId];
+  setStep(2);
+  document.getElementById('step2ArtistName').textContent = `${a.artist || a.name}（${a.name}）`;
+  document.getElementById('step2ArtistSub').textContent  = a.phone + (a.genre ? '　' + a.genre : '');
+  document.getElementById('step1Area').style.display = 'none';
+  document.getElementById('step2Area').style.display = 'block';
+}
+function backToStep1() {
+  setStep(1);
+  document.getElementById('step1Area').style.display = 'block';
+  document.getElementById('step2Area').style.display = 'none';
+}
+
+// ===== SNS INPUT HIGHLIGHT =====
+function onSnsInput(platform) {
+  const val = document.getElementById('f' + platform.charAt(0).toUpperCase() + platform.slice(1)).value.trim();
+  document.getElementById('snsWrap_' + platform).classList.toggle('has-value', val !== '');
+}
+function onVideoInput(type) {
+  document.getElementById('videoOptionUrl').classList.toggle('selected',  document.getElementById('fVideoUrl').value.trim() !== '');
+  document.getElementById('videoOptionLine').classList.toggle('selected', document.getElementById('fVideoLineId').value.trim() !== '');
+}
+
+// ===== NEW ARTIST =====
+function submitNewArtist() {
+  const name     = document.getElementById('fName').value.trim();
+  const phone    = document.getElementById('fPhone').value.trim();
+  const artist   = document.getElementById('fArtist').value.trim();
+  const lineId   = document.getElementById('fLineId').value.trim();
+  const instagram= document.getElementById('fInstagram').value.trim();
+  const tiktok   = document.getElementById('fTiktok').value.trim();
+  const youtube  = document.getElementById('fYoutube').value.trim();
+  const twitter  = document.getElementById('fTwitter').value.trim();
+  const videoUrl = document.getElementById('fVideoUrl').value.trim();
+  const videoLine= document.getElementById('fVideoLineId').value.trim();
+
+  if (!name || !phone)   { showToast('⚠️ お名前と電話番号は必須です', 'error'); return; }
+  if (!artist)           { showToast('⚠️ アーティスト名は必須です', 'error'); return; }
+  if (!lineId)           { showToast('⚠️ LINE IDは必須です（予約確定通知用）', 'error'); return; }
+  if (!instagram && !tiktok && !youtube && !twitter) {
+    showToast('⚠️ SNSアカウントを1つ以上入力してください', 'error'); return;
+  }
+  if (!videoUrl && !videoLine) { showToast('⚠️ 動画URLまたはLINE IDを入力してください', 'error'); return; }
+
+  const id = 'artist_' + Date.now();
+  artists[id] = {
+    id, name, phone, artist,
+    genre:     document.getElementById('fGenre').value.trim(),
+    instagram, tiktok, youtube, twitter,
+    videoUrl, videoLineId: videoLine,
+    lineId,
+    note:      document.getElementById('fNote').value.trim(),
+    status: 'pending',
+    createdAt: new Date().toISOString()
+  };
+  saveArtists();
+  updatePendingBadge();
+
+  // LINE通知
+  const snsLines = [];
+  if (instagram) snsLines.push(`📸 Instagram: @${instagram}`);
+  if (tiktok)    snsLines.push(`🎵 TikTok: ${tiktok}`);
+  if (youtube)   snsLines.push(`▶️ YouTube: ${youtube}`);
+  if (twitter)   snsLines.push(`𝕏 X: ${twitter}`);
+  const videoLine2 = videoUrl ? `🎬 動画URL: ${videoUrl}` : (videoLine ? `💬 動画LINE: ${videoLine}` : '');
+  const msg = `【🎤 新規アーティスト審査申請】\n👤 ${name}\n🎸 ${artist}${artists[id].genre ? `（${artists[id].genre}）`:''}\n📞 ${phone}\n💬 LINE ID: ${lineId}\n${snsLines.join('\n')}${videoLine2 ? '\n'+videoLine2 : ''}${artists[id].note ? '\n📝 '+artists[id].note : ''}\n\n⚠️「アーティスト管理」タブから承認してください。`;
+  sendLineNotify(msg);
+
+  // UI
+  document.getElementById('pendingInline').classList.add('show');
+  document.getElementById('newArtistForm').querySelectorAll('input,textarea,button.btn-register').forEach(el => el.disabled = true);
+  showToast('📨 審査申請を受け付けました！', 'pending');
+}
+
+// ===== RESERVE =====
+function submitReservation() {
+  if (!currentFoundArtistId) return;
+  const a = artists[currentFoundArtistId];
+  const { y, m, d } = selectedDate;
+  const dateKey = fmtKey(y, m, d);
+  const slot  = SLOTS.find(s => s.id === selectedSlotId);
+  const note  = document.getElementById('fReserveNote').value.trim();
+  const id    = 'res_' + Date.now();
+
+  reservations[id] = { id, dateKey, slotId: selectedSlotId, artistId: a.id, name: a.name, artistName: a.artist || a.name, phone: a.phone, lineId: a.lineId, note, createdAt: new Date().toISOString() };
+  saveRes();
+
+  const msg = `【✅ 予約確定通知】\n📅 ${y}年${m}月${d}日\n⏰ ${slot.time}（${slot.label}）\n🎤 ${a.artist || a.name}（${a.name}）\n📞 ${a.phone}\n💬 LINE: ${a.lineId}${note ? '\n📝 '+note : ''}`;
+  sendLineNotify(msg);
+
+  setStep(3);
+  showToast(`✅ ${y}年${m}月${d}日 ${slot.time} の予約が完了しました！`, 'success');
+  closeModal();
+  renderCalendar();
+}
+
+// ===== CANCEL =====
+function confirmCancel(id, name, time) {
+  pendingCancelKey = id;
+  document.getElementById('confirmTitle').textContent = '予約をキャンセルしますか？';
+  document.getElementById('confirmText').textContent  = `${name} 様の\n「${time}」の予約をキャンセルします。\nこの操作は取り消せません。`;
+  document.getElementById('confirmYes').onclick = executeCancel;
+  document.getElementById('confirmOverlay').classList.add('show');
+}
+function closeConfirm() { document.getElementById('confirmOverlay').classList.remove('show'); pendingCancelKey = null; }
+function executeCancel() {
+  const res = reservations[pendingCancelKey];
+  if (!res) return;
+  const slot = SLOTS.find(s => s.id === res.slotId);
+  const [y,m,d] = res.dateKey.split('-');
+  const msg = `【❌ キャンセル通知】\n${y}年${m}月${d}日\n⏰ ${slot.time}（${slot.label}）\n🎤 ${res.artistName||res.name}（${res.name}）\n📞 ${res.phone}\n💬 LINE: ${res.lineId||'—'} の予約がキャンセルされました。`;
+  sendLineNotify(msg);
+  delete reservations[pendingCancelKey];
+  saveRes();
+  closeConfirm(); closeModal();
+  renderCalendar();
+  showToast('🗑️ 予約をキャンセルしました', 'cancel');
+}
+
+// ===== ARTIST LIST =====
+function renderArtistList() {
+  const list = document.getElementById('artistList');
+  const sorted = Object.values(artists).sort((a,b) => {
+    if (a.status==='pending' && b.status!=='pending') return -1;
+    if (a.status!=='pending' && b.status==='pending') return  1;
+    return b.createdAt.localeCompare(a.createdAt);
+  });
+  if (!sorted.length) { list.innerHTML = '<div class="no-data">登録アーティストはまだいません</div>'; return; }
+  list.innerHTML = '';
+  sorted.forEach(a => {
+    const card = document.createElement('div');
+    card.className = 'artist-card' + (a.status==='pending' ? ' pending-card' : '');
+    const initial  = (a.artist || a.name).charAt(0);
+    const snsArr   = [];
+    if (a.instagram) snsArr.push(`📸@${a.instagram}`);
+    if (a.tiktok)    snsArr.push('🎵TikTok');
+    if (a.youtube)   snsArr.push('▶️YouTube');
+    if (a.twitter)   snsArr.push(`𝕏${a.twitter}`);
+    const videoInfo = a.videoUrl ? '🎬動画URL有' : (a.videoLineId ? `💬動画LINE有` : '');
+    const sub = [a.phone, `💬LINE:${a.lineId||'—'}`, ...snsArr, videoInfo, a.genre].filter(Boolean).join('　');
+    const actions = a.status==='pending'
+      ? `<div class="artist-actions"><button class="btn-approve" onclick="approveArtist('${a.id}')">✅ 承認</button><button class="btn-reject" onclick="rejectArtist('${a.id}')">✗ 却下</button></div>`
+      : `<div class="status-approved">✅ 承認済み</div>`;
+    card.innerHTML = `
+      <div class="artist-avatar">${initial}</div>
+      <div class="artist-card-info">
+        <div class="artist-card-name">${a.artist||a.name}${a.artist?`（${a.name}）`:''}</div>
+        <div class="artist-card-sub">${sub}</div>
+      </div>${actions}`;
+    list.appendChild(card);
+  });
+}
+
+function approveArtist(id) {
+  artists[id].status = 'approved';
+  saveArtists(); updatePendingBadge(); renderArtistList();
+  const a = artists[id];
+  sendLineNotify(`【✅ 審査承認】\n${a.artist||a.name}（${a.name}）さんが承認されました。\n💬 LINE: ${a.lineId||'—'}\n予約が可能になりました。`);
+  showToast(`✅ ${a.artist||a.name} を承認しました`, 'success');
+}
+function rejectArtist(id) {
+  const a = artists[id];
+  if (confirm(`「${a.artist||a.name}」を却下・削除しますか？`)) {
+    delete artists[id]; saveArtists(); updatePendingBadge(); renderArtistList();
+    showToast('🗑️ 却下しました', 'cancel');
+  }
+}
+
+// ===== RES LIST =====
+function renderResList() {
+  const list = document.getElementById('resList');
+  const sorted = Object.values(reservations).sort((a,b) => a.dateKey.localeCompare(b.dateKey));
+  if (!sorted.length) { list.innerHTML = '<div class="no-data">現在の予約はありません</div>'; return; }
+  list.innerHTML = '';
+  sorted.forEach(res => {
+    const slot = SLOTS.find(s => s.id === res.slotId);
+    const [y,m,d] = res.dateKey.split('-');
+    const safeName = (res.artistName||res.name).replace(/'/g,"\\'");
+    const item = document.createElement('div');
+    item.className = 'res-item';
+    item.innerHTML = `
+      <span class="res-date">${parseInt(m)}/${parseInt(d)}</span>
+      <span class="res-time">${slot.time}</span>
+      <span class="res-name">${res.artistName||res.name}</span>
+      <button class="res-cancel-btn" onclick="confirmCancel('${res.id}','${safeName}','${slot.time}')">キャンセル</button>`;
+    list.appendChild(item);
+  });
+}
+
+// ===== LINE =====
+function sendLineNotify(message) {
+  const token = document.getElementById('lineToken').value.trim();
+  if (!token) return;
+  fetch('https://notify-api.line.me/api/notify', {
+    method:'POST',
+    headers:{ 'Authorization':`Bearer ${token}`, 'Content-Type':'application/x-www-form-urlencoded' },
+    body:`message=${encodeURIComponent(message)}`,
+  }).catch(() => console.log('LINE通知:', message));
+}
+function updateLineStatus() {
+  const token = document.getElementById('lineToken').value.trim();
+  const el    = document.getElementById('lineStatus');
+  el.textContent = token ? '✅ 設定済み' : '未設定';
+  el.className = 'line-status' + (token ? ' active' : '');
+}
+
+// ===== TOAST =====
+function showToast(msg, type='') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (type ? ' '+type : '');
+  setTimeout(() => t.className = 'toast', 3500);
+}
+
+// ===== HELPERS =====
+function fmtKey(y, m, d) {
+  return `${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+}
+
+init();
+</script>
+</body>
+</html>
