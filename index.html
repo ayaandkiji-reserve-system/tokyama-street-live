@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>チーム未来｜ライブスペース予約</title>
+<title>徳山駅前｜路上ライブスペース予約</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -265,22 +265,25 @@ main{max-width:980px;margin:0 auto;padding:28px 18px 80px;}
   <div class="logo">
     <div class="logo-icon">🎵</div>
     <div class="logo-text">
-      <h1>チーム未来</h1>
+      <h1>徳山駅前路上ライブスペース予約</h1>
       <p>STREET LIVE SPACE RESERVATION</p>
     </div>
   </div>
-  <div class="header-badge">路上ライブスペース予約</div>
+  <div style="display:flex;align-items:center;gap:10px;">
+    <div class="header-badge">路上ライブスペース予約</div>
+    <button id="adminBtn" onclick="toggleAdminLogin()" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.35);color:#fff;font-size:.72rem;padding:6px 14px;border-radius:20px;cursor:pointer;font-family:inherit;font-weight:500;backdrop-filter:blur(10px);transition:background .2s;">🔒 管理者</button>
+  </div>
 </header>
 
 <main>
   <div class="tab-nav">
     <button class="tab-btn active" id="tabCalendar" onclick="switchTab('calendar')">📅 カレンダー予約</button>
-    <button class="tab-btn" id="tabSlots" onclick="switchTab('slots')">🔧 枠管理</button>
-    <button class="tab-btn" id="tabArtists" onclick="switchTab('artists')">
-      🎤 アーティスト管理
+    <button class="tab-btn admin-tab" id="tabSlots" onclick="switchTab('slots')" style="display:none">🔧 枠管理</button>
+    <button class="tab-btn admin-tab" id="tabArtists" onclick="switchTab('artists')" style="display:none">
+      🔵 アーティスト管理
       <span class="badge" id="pendingBadge" style="display:none">0</span>
     </button>
-    <button class="tab-btn" id="tabReservations" onclick="switchTab('reservations')">📋 予約一覧</button>
+    <button class="tab-btn admin-tab" id="tabReservations" onclick="switchTab('reservations')" style="display:none">📋 予約一覧</button>
   </div>
 
   <!-- カレンダー -->
@@ -498,6 +501,23 @@ main{max-width:980px;margin:0 auto;padding:28px 18px 80px;}
     <div class="confirm-actions">
       <button class="btn-no" onclick="closeConfirm()">もどる</button>
       <button class="btn-yes" id="confirmYes">キャンセルする</button>
+    </div>
+  </div>
+</div>
+
+<!-- 管理者ログインモーダル -->
+<div class="confirm-overlay" id="adminOverlay">
+  <div class="confirm-box">
+    <div class="confirm-icon" id="adminModalIcon">🔐</div>
+    <div class="confirm-title" id="adminModalTitle">管理者ログイン</div>
+    <div class="confirm-text" id="adminModalText">パスワードを入力してください</div>
+    <input type="password" id="adminPasswordInput"
+      placeholder="パスワード"
+      style="width:100%;border:1.5px solid var(--sky-mid);border-radius:9px;padding:10px 14px;font-size:.9rem;font-family:inherit;outline:none;margin-bottom:14px;text-align:center;letter-spacing:.2em;"
+      onkeydown="if(event.key==='Enter')submitAdminLogin()">
+    <div class="confirm-actions">
+      <button class="btn-no" onclick="closeAdminOverlay()">キャンセル</button>
+      <button class="btn-yes" style="background:linear-gradient(135deg,var(--sky-deep),var(--sky));" onclick="submitAdminLogin()">ログイン</button>
     </div>
   </div>
 </div>
@@ -1026,6 +1046,55 @@ function renderResList() {
       <button class="res-cancel-btn" onclick="confirmCancel('${res.id}','${safe}','${slot.time}')">キャンセル</button>`;
     list.appendChild(item);
   });
+}
+
+// ===== ADMIN AUTH =====
+// ★パスワードをここで変更してください★
+const ADMIN_PASSWORD = 'Hirakegoma2025';
+
+let isAdmin = false;
+
+function toggleAdminLogin() {
+  if (isAdmin) {
+    // ログアウト
+    isAdmin = false;
+    document.querySelectorAll('.admin-tab').forEach(el => el.style.display = 'none');
+    switchTab('calendar');
+    document.getElementById('adminBtn').textContent = '🔒 管理者';
+    document.getElementById('adminBtn').style.background = 'rgba(255,255,255,.15)';
+    showToast('🔒 管理者をログアウトしました');
+  } else {
+    // ログインモーダルを開く
+    document.getElementById('adminPasswordInput').value = '';
+    document.getElementById('adminModalIcon').textContent  = '🔐';
+    document.getElementById('adminModalTitle').textContent = '管理者ログイン';
+    document.getElementById('adminModalText').textContent  = 'パスワードを入力してください';
+    document.getElementById('adminPasswordInput').style.borderColor = 'var(--sky-mid)';
+    document.getElementById('adminOverlay').classList.add('show');
+    setTimeout(() => document.getElementById('adminPasswordInput').focus(), 100);
+  }
+}
+
+function submitAdminLogin() {
+  const pw = document.getElementById('adminPasswordInput').value;
+  if (pw === ADMIN_PASSWORD) {
+    isAdmin = true;
+    document.getElementById('adminOverlay').classList.remove('show');
+    document.querySelectorAll('.admin-tab').forEach(el => el.style.display = 'flex');
+    document.getElementById('adminBtn').textContent = '🔓 管理者';
+    document.getElementById('adminBtn').style.background = 'rgba(255,255,255,.3)';
+    showToast('🔓 管理者としてログインしました', 'success');
+  } else {
+    document.getElementById('adminPasswordInput').style.borderColor = 'var(--red)';
+    document.getElementById('adminModalIcon').textContent  = '❌';
+    document.getElementById('adminModalTitle').textContent = 'パスワードが違います';
+    document.getElementById('adminPasswordInput').value = '';
+    document.getElementById('adminPasswordInput').focus();
+  }
+}
+
+function closeAdminOverlay() {
+  document.getElementById('adminOverlay').classList.remove('show');
 }
 
 // ===== HELPERS =====
