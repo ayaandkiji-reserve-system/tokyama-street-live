@@ -251,11 +251,31 @@ main{max-width:980px;margin:0 auto;padding:28px 18px 80px;}
 .loading-text{color:#fff;font-size:.85rem;font-weight:600;}
 @keyframes spin{to{transform:rotate(360deg)}}
 
+/* PERIOD BULK */
+.period-form{display:flex;flex-direction:column;gap:16px;}
+.period-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.period-field{display:flex;flex-direction:column;gap:5px;}
+.period-field label{font-size:.75rem;font-weight:600;color:var(--gray-700);}
+.period-field input[type=date]{border:1.5px solid var(--sky-mid);border-radius:9px;padding:9px 12px;font-size:.84rem;font-family:inherit;outline:none;color:var(--gray-900);background:#fff;}
+.period-field input[type=date]:focus{border-color:var(--sky);}
+.period-sep{font-size:1.1rem;color:var(--gray-500);font-weight:700;margin-top:18px;}
+.period-label{font-size:.75rem;font-weight:600;color:var(--gray-700);display:block;margin-bottom:8px;}
+.period-dow-wrap{background:var(--sky-pale);border-radius:12px;padding:12px 14px;border:1.5px solid var(--sky-mid);}
+.period-dow-grid{display:flex;gap:8px;flex-wrap:wrap;}
+.period-slot-grid{display:flex;gap:8px;flex-wrap:wrap;}
+.dow-check{display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 12px;border-radius:9px;border:1.5px solid var(--sky-mid);background:#fff;cursor:pointer;font-size:.8rem;font-weight:700;color:var(--gray-700);transition:all .15s;min-width:44px;text-align:center;}
+.dow-check input{display:none;}
+.dow-check:has(input:checked){background:var(--sky);border-color:var(--sky-deep);color:#fff;}
+.dow-check.sun:has(input:checked){background:#e07070;border-color:#c05050;color:#fff;}
+.dow-check.sat:has(input:checked){background:var(--sky-deep);border-color:#0f4a7a;color:#fff;}
+.period-actions{display:flex;gap:8px;flex-wrap:wrap;}
+
 @media(max-width:600px){
   header{padding:16px 14px;} .cal-legend{display:none;}
   main{padding:16px 10px 50px;} .form-row{grid-template-columns:1fr;}
   .modal-body{padding:16px 16px;} .video-or{grid-template-columns:1fr;}
-  .two-col{grid-template-columns:1fr;}
+  .two-col{grid-template-columns:1fr;} .period-row{flex-direction:column;align-items:flex-start;}
+  .period-sep{margin-top:0;}
 }
 </style>
 </head>
@@ -312,8 +332,10 @@ main{max-width:980px;margin:0 auto;padding:28px 18px 80px;}
 
   <!-- 枠管理 -->
   <div id="pageSlots" style="display:none">
-    <div class="panel">
-      <div class="panel-title"><span>🔧</span>予約枠のオープン／クローズ管理</div>
+
+    <!-- 日付単体 -->
+    <div class="panel" style="margin-bottom:14px;">
+      <div class="panel-title"><span>📅</span>1日単位の設定</div>
       <div class="slot-mgmt-header">
         <label>対象日を選択</label>
         <input type="date" id="slotMgmtDate" onchange="renderSlotMgmt()">
@@ -323,10 +345,58 @@ main{max-width:980px;margin:0 auto;padding:28px 18px 80px;}
         <div class="no-data">日付を選択してください</div>
       </div>
       <div class="bulk-actions">
-        <button class="bulk-btn" onclick="bulkOpen()">✅ 全枠オープン</button>
-        <button class="bulk-btn danger" onclick="bulkClose()">🚫 全枠クローズ</button>
+        <button class="bulk-btn" onclick="bulkOpen()">✅ この日を全枠オープン</button>
+        <button class="bulk-btn danger" onclick="bulkClose()">🚫 この日を全枠クローズ</button>
       </div>
     </div>
+
+    <!-- 期間一括 -->
+    <div class="panel">
+      <div class="panel-title"><span>📆</span>期間指定で一括設定</div>
+      <div class="period-form">
+        <div class="period-row">
+          <div class="period-field">
+            <label>開始日</label>
+            <input type="date" id="periodStart">
+          </div>
+          <div class="period-sep">〜</div>
+          <div class="period-field">
+            <label>終了日</label>
+            <input type="date" id="periodEnd">
+          </div>
+        </div>
+
+        <div class="period-dow-wrap">
+          <label class="period-label">対象曜日（未選択 = 全曜日）</label>
+          <div class="period-dow-grid">
+            <label class="dow-check sun"><input type="checkbox" value="0"> 日</label>
+            <label class="dow-check"><input type="checkbox" value="1"> 月</label>
+            <label class="dow-check"><input type="checkbox" value="2"> 火</label>
+            <label class="dow-check"><input type="checkbox" value="3"> 水</label>
+            <label class="dow-check"><input type="checkbox" value="4"> 木</label>
+            <label class="dow-check"><input type="checkbox" value="5"> 金</label>
+            <label class="dow-check sat"><input type="checkbox" value="6"> 土</label>
+          </div>
+        </div>
+
+        <div class="period-dow-wrap">
+          <label class="period-label">対象時間帯（未選択 = 全時間帯）</label>
+          <div class="period-slot-grid">
+            <label class="dow-check" id="periodSlotCheck_A"><input type="checkbox" value="A"> 1<span style="font-size:.65rem;color:var(--gray-500);display:block;">17:00〜18:00</span></label>
+            <label class="dow-check" id="periodSlotCheck_B"><input type="checkbox" value="B"> 2<span style="font-size:.65rem;color:var(--gray-500);display:block;">18:00〜19:00</span></label>
+            <label class="dow-check" id="periodSlotCheck_C"><input type="checkbox" value="C"> 3<span style="font-size:.65rem;color:var(--gray-500);display:block;">19:00〜20:00</span></label>
+            <label class="dow-check" id="periodSlotCheck_D"><input type="checkbox" value="D"> 4<span style="font-size:.65rem;color:var(--gray-500);display:block;">20:00〜21:00</span></label>
+          </div>
+        </div>
+
+        <div class="period-actions">
+          <button class="bulk-btn" onclick="periodBulk(false)">✅ 期間内を一括オープン</button>
+          <button class="bulk-btn danger" onclick="periodBulk(true)">🚫 期間内を一括クローズ</button>
+        </div>
+        <div id="periodProgress" style="display:none;margin-top:12px;font-size:.78rem;color:var(--sky-deep);font-weight:600;text-align:center;"></div>
+      </div>
+    </div>
+
   </div>
 
   <!-- アーティスト管理 -->
@@ -532,7 +602,7 @@ main{max-width:980px;margin:0 auto;padding:28px 18px 80px;}
 <script>
 // =====================================================
 // ★ここを自分のGASデプロイURLに書き換えてください★
-const GAS_URL = 'https://script.google.com/macros/s/AKfycbx8nfGzowgMmGipKoz9TbDsTy24THaGDYa298MBhpAZ8QMaGm9ltrgCpu9-2106Vqd-9A/exec';
+const GAS_URL = 'https://script.google.com/macros/s/ここにデプロイURLを入れる/exec';
 // =====================================================
 
 const SLOTS = [
@@ -686,6 +756,61 @@ async function bulkClose() {
   for (const s of SLOTS) { const k=slotKey(d,s.id); closedSlots[k]=true; await saveClosed(k,false); }
   showLoading(false); renderSlotMgmt(); renderCalendar();
   showToast('🚫 全枠をクローズしました','cancel');
+}
+
+// ===== PERIOD BULK =====
+async function periodBulk(isClose) {
+  const startVal = document.getElementById('periodStart').value;
+  const endVal   = document.getElementById('periodEnd').value;
+  if (!startVal || !endVal) { showToast('⚠️ 開始日と終了日を入力してください','error'); return; }
+  if (startVal > endVal)    { showToast('⚠️ 終了日は開始日より後にしてください','error'); return; }
+
+  // 対象曜日（未選択なら全曜日）
+  const checkedDows = [...document.querySelectorAll('.period-dow-grid input:checked')].map(el => parseInt(el.value));
+  const targetDows  = checkedDows.length > 0 ? checkedDows : [0,1,2,3,4,5,6];
+
+  // 対象スロット（未選択なら全スロット）
+  const checkedSlots = [...document.querySelectorAll('.period-slot-grid input:checked')].map(el => el.value);
+  const targetSlots  = checkedSlots.length > 0 ? checkedSlots : SLOTS.map(s => s.id);
+
+  // 期間内の日付を列挙
+  const dates = [];
+  const cur = new Date(startVal);
+  const end = new Date(endVal);
+  while (cur <= end) {
+    if (targetDows.includes(cur.getDay())) {
+      dates.push(fmtKey(cur.getFullYear(), cur.getMonth()+1, cur.getDate()));
+    }
+    cur.setDate(cur.getDate()+1);
+  }
+
+  if (dates.length === 0) { showToast('⚠️ 対象日が見つかりません','error'); return; }
+
+  const total = dates.length * targetSlots.length;
+  const prog  = document.getElementById('periodProgress');
+  prog.style.display = 'block';
+  let done = 0;
+
+  showLoading(true);
+  for (const dateKey of dates) {
+    for (const slotId of targetSlots) {
+      const k = slotKey(dateKey, slotId);
+      if (isClose) {
+        closedSlots[k] = true;
+        await saveClosed(k, false);
+      } else {
+        delete closedSlots[k];
+        await saveClosed(k, true);
+      }
+      done++;
+      prog.textContent = `処理中... ${done} / ${total} 件`;
+    }
+  }
+  showLoading(false);
+  prog.textContent = `✅ ${total}件の設定が完了しました`;
+  setTimeout(() => { prog.style.display='none'; }, 3000);
+  renderSlotMgmt(); renderCalendar();
+  showToast(`${isClose ? '🚫 クローズ' : '✅ オープン'} ${dates.length}日分・${targetSlots.length}枠を一括設定しました`, isClose ? 'cancel' : 'success');
 }
 
 // ===== CALENDAR =====
@@ -1050,7 +1175,7 @@ function renderResList() {
 
 // ===== ADMIN AUTH =====
 // ★パスワードをここで変更してください★
-const ADMIN_PASSWORD = 'Hirakegoma2025';
+const ADMIN_PASSWORD = 'mirai2024';
 
 let isAdmin = false;
 
