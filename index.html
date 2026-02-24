@@ -309,6 +309,30 @@ main{max-width:980px;margin:0 auto;padding:28px 18px 80px;}
 
 /* 念のため横スクロール発生を止める */
 body{ overflow-x: hidden; }
+/* =========================
+   選択中スロットの強調（オレンジ系）
+   ========================= */
+.slot-item.selected-slot{
+  border-color: #f59e0b !important;
+  background: #fffbeb !important; /* orange-pale */
+  box-shadow: 0 10px 24px rgba(245,158,11,.18);
+  transform: translateY(-1px);
+}
+
+.slot-item.selected-slot .slot-time{
+  color: #b45309; /* 濃いオレンジ */
+}
+
+.slot-item.selected-slot .slot-label{
+  color: #92400e;
+  font-weight: 800;
+}
+
+.slot-item.selected-slot .slot-action-btn.btn-reserve{
+  background: linear-gradient(135deg,#d97706,#f59e0b) !important;
+  box-shadow: 0 4px 14px rgba(245,158,11,.35);
+}
+  
 </style>
 </head>
 <body>
@@ -999,30 +1023,44 @@ function openModal(y,m,d,dow) {
 }
 
 function renderModalSlots(dateKey) {
-  const list=document.getElementById('slotList');
-  list.innerHTML='';
-  const dayRess=Object.values(reservations).filter(r=>r.dateKey===dateKey);
-  SLOTS.forEach(slot=>{
-    const res=dayRess.find(r=>r.slotId===slot.id);
-    const closed=isClosed(dateKey,slot.id);
-    const item=document.createElement('div');
-    item.className='slot-item'+(res?' booked-slot':closed?' closed-slot':'');
-    item.innerHTML=`
+  const list = document.getElementById('slotList');
+  list.innerHTML = '';
+  const dayRess = Object.values(reservations).filter(r => r.dateKey === dateKey);
+
+  SLOTS.forEach(slot => {
+    const res = dayRess.find(r => r.slotId === slot.id);
+    const closed = isClosed(dateKey, slot.id);
+
+    // ✅ 予約が入った枠は一覧から外す（非表示）
+    if (res) return;
+
+    const item = document.createElement('div');
+    const isSelected = selectedSlotId === slot.id;
+
+    item.className =
+      'slot-item' +
+      (closed ? ' closed-slot' : '') +
+      (isSelected ? ' selected-slot' : '');
+
+    item.innerHTML = `
       <div class="slot-time">${slot.time}</div>
       <div class="slot-info">
-        <div class="slot-label">${closed?'クローズ':(res?(res.artistName||res.name):slot.label)}</div>
-        <div class="slot-sublabel">${closed?'—':(res?res.name:'空き枠')}</div>
+        <div class="slot-label">${closed ? 'クローズ' : slot.label}</div>
+        <div class="slot-sublabel">${closed ? '—' : '空き枠'}</div>
       </div>`;
-    const btn=document.createElement('button');
-    btn.className='slot-action-btn ';
-    if (closed) { btn.className+='btn-disabled'; btn.textContent='受付停止中'; }
-    else if (res) {
-      btn.className+='btn-cancel'; btn.textContent='キャンセル';
-      btn.onclick=()=>confirmCancel(res.id, res.artistName||res.name, slot.time);
+
+    const btn = document.createElement('button');
+    btn.className = 'slot-action-btn ';
+
+    if (closed) {
+      btn.className += 'btn-disabled';
+      btn.textContent = '受付停止中';
     } else {
-      btn.className+='btn-reserve'; btn.textContent='予約する';
-      btn.onclick=()=>openForm(slot);
+      btn.className += 'btn-reserve';
+      btn.textContent = '予約する';
+      btn.onclick = () => openForm(slot);
     }
+
     item.appendChild(btn);
     list.appendChild(item);
   });
@@ -1033,7 +1071,11 @@ function closeModalIfOutside(e) { if (e.target===document.getElementById('modalO
 
 // ===== FORM =====
 function openForm(slot) {
-  selectedSlotId=slot.id;
+  selectedSlotId = slot.id;
+
+  // 選択枠をオレンジで強調するために再描画
+  renderModalSlots(fmtKey(selectedDate.y, selectedDate.m, selectedDate.d));
+
   resetFormUI();
   document.getElementById('formSection').classList.add('show');
   setTimeout(()=>document.getElementById('formSection').scrollIntoView({behavior:'smooth',block:'nearest'}),50);
