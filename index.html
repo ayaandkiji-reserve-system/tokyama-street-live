@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>徳山駅前｜ライブスペース予約</title>
+<title>チーム未来｜ライブスペース予約</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -312,18 +312,11 @@ main { max-width:980px; margin:0 auto; padding:28px 18px 80px; }
 </header>
 
 <main>
-  <div class="line-settings">
-    <div class="line-icon">💬</div>
-    <label>LINE Notify トークン</label>
-    <input type="text" id="lineToken" placeholder="LINE Notify のトークンを入力してください..." oninput="updateLineStatus()">
-    <div class="line-status" id="lineStatus">未設定</div>
-  </div>
-
   <div class="tab-nav">
     <button class="tab-btn active" id="tabCalendar" onclick="switchTab('calendar')">📅 カレンダー予約</button>
     <button class="tab-btn" id="tabSlots" onclick="switchTab('slots')">🔧 枠管理</button>
     <button class="tab-btn" id="tabArtists" onclick="switchTab('artists')">
-      🔵 アーティスト管理
+      🎤 アーティスト管理
       <span class="badge" id="pendingBadge" style="display:none">0</span>
     </button>
     <button class="tab-btn" id="tabReservations" onclick="switchTab('reservations')">📋 予約一覧</button>
@@ -560,7 +553,39 @@ main { max-width:980px; margin:0 auto; padding:28px 18px 80px; }
 
 <div class="toast" id="toast"></div>
 
+<!-- ローディング -->
+<div id="loadingOverlay" style="display:none;position:fixed;inset:0;background:rgba(15,40,65,.45);backdrop-filter:blur(3px);z-index:9000;align-items:center;justify-content:center;flex-direction:column;gap:14px;">
+  <div style="width:44px;height:44px;border:4px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;"></div>
+  <div style="color:#fff;font-size:.85rem;font-weight:600;">処理中...</div>
+</div>
+<style>@keyframes spin{to{transform:rotate(360deg)}}</style>
+
 <script>
+// ===== TOAST =====
+function showToast(msg, type='') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (type ? ' '+type : '');
+  setTimeout(() => t.className = 'toast', 3500);
+}
+</script>
+
+<script>
+// ===== GAS API URL（ここを自分のデプロイURLに書き換えてください）=====
+const GAS_URL = 'https://script.google.com/macros/s/ここにデプロイURLを入れる/exec';
+
+async function apiPost(body) {
+  const res = await fetch(GAS_URL, {
+    method: 'POST',
+    body: JSON.stringify(body)
+  });
+  return res.json();
+}
+async function apiGet(sheet) {
+  const res = await fetch(`${GAS_URL}?sheet=${sheet}`);
+  return res.json();
+}
+
 // ===== CONSTANTS =====
 const SLOTS = [
   { id:'A', time:'10:00〜12:00', label:'午前の部' },
@@ -576,28 +601,60 @@ let currentYear, currentMonth;
 let selectedDate = null, selectedSlotId = null;
 let pendingCancelKey = null;
 let currentFoundArtistId = null;
-
-// reservations: { id: { id, dateKey, slotId, artistId, name, artistName, phone, lineId, note, createdAt } }
-// artists:      { id: { id, name, phone, artist, genre, instagram, tiktok, youtube, twitter, videoUrl, videoLineId, lineId, note, status, createdAt } }
-// closedSlots:  { "dateKey_slotId": true }  — closed = not available
 let reservations = {}, artists = {}, closedSlots = {};
 
-function load() {
-  reservations = JSON.parse(localStorage.getItem('tm_res')    || '{}');
-  artists      = JSON.parse(localStorage.getItem('tm_artists')|| '{}');
-  closedSlots  = JSON.parse(localStorage.getItem('tm_closed') || '{}');
+// ===== DATA LOAD/SAVE (GAS) =====
+async function load() {
+  showLoading(true);
+  try {
+    const [resRows, artistRows, closedRows] = await Promise.all([
+      apiGet('reservations'),
+      apiGet('artists'),
+      apiGet('closedSlots'),
+    ]);
+    reservations = {};
+    resRows.forEach(r => { if (r.id) reservations[r.id] = r; });
+    artists = {};
+    artistRows.forEach(a => { if (a.id) artists[a.id] = a; });
+    closedSlots = {};
+    closedRows.forEach(c => { if (c.key) closedSlots[c.key] = true; });
+  } catch(err) {
+    showToast('⚠️ データの読み込みに失敗しました', 'error');
+  }
+  showLoading(false);
 }
-function saveRes()     { localStorage.setItem('tm_res',     JSON.stringify(reservations)); }
-function saveArtists() { localStorage.setItem('tm_artists', JSON.stringify(artists)); }
-function saveClosed()  { localStorage.setItem('tm_closed',  JSON.stringify(closedSlots)); }
 
-function init() {
-  load();
+async function saveRes(data, isDelete = false) {
+  if (isDelete) {
+    await apiPost({ action: 'delete', sheet: 'reservations', key: data });
+  } else {
+    await apiPost({ action: 'save', sheet: 'reservations', data });
+  }
+}
+async function saveArtist(data, isUpdate = false) {
+  await apiPost({ action: isUpdate ? 'update' : 'save', sheet: 'artists', data });
+}
+async function saveClosed(key, isDelete = false) {
+  if (isDelete) {
+    await apiPost({ action: 'deleteKey', sheet: 'closedSlots', key });
+  } else {
+    await apiPost({ action: 'setKey', sheet: 'closedSlots', key, data: 'true' });
+  }
+}
+async function sendLine(message) {
+  await apiPost({ action: 'lineNotify', data: { message } });
+}
+
+function showLoading(show) {
+  document.getElementById('loadingOverlay').style.display = show ? 'flex' : 'none';
+}
+
+async function init() {
   const now = new Date();
   currentYear = now.getFullYear();
   currentMonth = now.getMonth();
-  // default slot-mgmt date to today
-  document.getElementById('slotMgmtDate').value = fmtKey(now.getFullYear(), now.getMonth()+1, now.getDate()).replace(/\//g,'-');
+  document.getElementById('slotMgmtDate').value = fmtKey(now.getFullYear(), now.getMonth()+1, now.getDate());
+  await load();
   renderCalendar();
   updatePendingBadge();
 }
@@ -647,28 +704,37 @@ function renderSlotMgmt() {
   });
 }
 
-function toggleSlot(dateKey, slotId) {
+async function toggleSlot(dateKey, slotId) {
   const k = slotKey(dateKey, slotId);
-  if (closedSlots[k]) delete closedSlots[k];
-  else closedSlots[k] = true;
-  saveClosed();
+  if (closedSlots[k]) {
+    delete closedSlots[k];
+    await saveClosed(k, true);
+    showToast('✅ オープンにしました', 'success');
+  } else {
+    closedSlots[k] = true;
+    await saveClosed(k, false);
+    showToast('🚫 クローズしました', 'cancel');
+  }
   renderSlotMgmt();
   renderCalendar();
-  showToast(closedSlots[slotKey(dateKey, slotId)] ? '🚫 クローズしました' : '✅ オープンにしました');
 }
 
-function bulkOpen() {
+async function bulkOpen() {
   const dateVal = document.getElementById('slotMgmtDate').value;
   if (!dateVal) return;
-  SLOTS.forEach(s => delete closedSlots[slotKey(dateVal, s.id)]);
-  saveClosed(); renderSlotMgmt(); renderCalendar();
+  showLoading(true);
+  for (const s of SLOTS) { const k = slotKey(dateVal, s.id); delete closedSlots[k]; await saveClosed(k, true); }
+  showLoading(false);
+  renderSlotMgmt(); renderCalendar();
   showToast('✅ 全枠をオープンにしました', 'success');
 }
-function bulkClose() {
+async function bulkClose() {
   const dateVal = document.getElementById('slotMgmtDate').value;
   if (!dateVal) return;
-  SLOTS.forEach(s => closedSlots[slotKey(dateVal, s.id)] = true);
-  saveClosed(); renderSlotMgmt(); renderCalendar();
+  showLoading(true);
+  for (const s of SLOTS) { const k = slotKey(dateVal, s.id); closedSlots[k] = true; await saveClosed(k, false); }
+  showLoading(false);
+  renderSlotMgmt(); renderCalendar();
   showToast('🚫 全枠をクローズしました', 'cancel');
 }
 
@@ -903,7 +969,7 @@ function submitNewArtist() {
   if (!videoUrl && !videoLine) { showToast('⚠️ 動画URLまたはLINE IDを入力してください', 'error'); return; }
 
   const id = 'artist_' + Date.now();
-  artists[id] = {
+  const newArtist = {
     id, name, phone, artist,
     genre:     document.getElementById('fGenre').value.trim(),
     instagram, tiktok, youtube, twitter,
@@ -913,7 +979,9 @@ function submitNewArtist() {
     status: 'pending',
     createdAt: new Date().toISOString()
   };
-  saveArtists();
+  artists[id] = newArtist;
+  showLoading(true);
+  await saveArtist(newArtist);
   updatePendingBadge();
 
   // LINE通知
@@ -923,8 +991,9 @@ function submitNewArtist() {
   if (youtube)   snsLines.push(`▶️ YouTube: ${youtube}`);
   if (twitter)   snsLines.push(`𝕏 X: ${twitter}`);
   const videoLine2 = videoUrl ? `🎬 動画URL: ${videoUrl}` : (videoLine ? `💬 動画LINE: ${videoLine}` : '');
-  const msg = `【🎤 新規アーティスト審査申請】\n👤 ${name}\n🎸 ${artist}${artists[id].genre ? `（${artists[id].genre}）`:''}\n📞 ${phone}\n💬 LINE ID: ${lineId}\n${snsLines.join('\n')}${videoLine2 ? '\n'+videoLine2 : ''}${artists[id].note ? '\n📝 '+artists[id].note : ''}\n\n⚠️「アーティスト管理」タブから承認してください。`;
-  sendLineNotify(msg);
+  const msg = `【🎤 新規アーティスト審査申請】\n👤 ${name}\n🎸 ${artist}${newArtist.genre ? `（${newArtist.genre}）`:''}\n📞 ${phone}\n💬 LINE ID: ${lineId}\n${snsLines.join('\n')}${videoLine2 ? '\n'+videoLine2 : ''}${newArtist.note ? '\n📝 '+newArtist.note : ''}\n\n⚠️「アーティスト管理」タブから承認してください。`;
+  await sendLine(msg);
+  showLoading(false);
 
   // UI
   document.getElementById('pendingInline').classList.add('show');
@@ -933,7 +1002,7 @@ function submitNewArtist() {
 }
 
 // ===== RESERVE =====
-function submitReservation() {
+async function submitReservation() {
   if (!currentFoundArtistId) return;
   const a = artists[currentFoundArtistId];
   const { y, m, d } = selectedDate;
@@ -941,12 +1010,15 @@ function submitReservation() {
   const slot  = SLOTS.find(s => s.id === selectedSlotId);
   const note  = document.getElementById('fReserveNote').value.trim();
   const id    = 'res_' + Date.now();
+  const resData = { id, dateKey, slotId: selectedSlotId, artistId: a.id, name: a.name, artistName: a.artist || a.name, phone: a.phone, lineId: a.lineId, note, createdAt: new Date().toISOString() };
 
-  reservations[id] = { id, dateKey, slotId: selectedSlotId, artistId: a.id, name: a.name, artistName: a.artist || a.name, phone: a.phone, lineId: a.lineId, note, createdAt: new Date().toISOString() };
-  saveRes();
+  reservations[id] = resData;
+  showLoading(true);
+  await saveRes(resData);
 
   const msg = `【✅ 予約確定通知】\n📅 ${y}年${m}月${d}日\n⏰ ${slot.time}（${slot.label}）\n🎤 ${a.artist || a.name}（${a.name}）\n📞 ${a.phone}\n💬 LINE: ${a.lineId}${note ? '\n📝 '+note : ''}`;
-  sendLineNotify(msg);
+  await sendLine(msg);
+  showLoading(false);
 
   setStep(3);
   showToast(`✅ ${y}年${m}月${d}日 ${slot.time} の予約が完了しました！`, 'success');
@@ -963,15 +1035,17 @@ function confirmCancel(id, name, time) {
   document.getElementById('confirmOverlay').classList.add('show');
 }
 function closeConfirm() { document.getElementById('confirmOverlay').classList.remove('show'); pendingCancelKey = null; }
-function executeCancel() {
+async function executeCancel() {
   const res = reservations[pendingCancelKey];
   if (!res) return;
   const slot = SLOTS.find(s => s.id === res.slotId);
   const [y,m,d] = res.dateKey.split('-');
   const msg = `【❌ キャンセル通知】\n${y}年${m}月${d}日\n⏰ ${slot.time}（${slot.label}）\n🎤 ${res.artistName||res.name}（${res.name}）\n📞 ${res.phone}\n💬 LINE: ${res.lineId||'—'} の予約がキャンセルされました。`;
-  sendLineNotify(msg);
   delete reservations[pendingCancelKey];
-  saveRes();
+  showLoading(true);
+  await saveRes(pendingCancelKey, true);
+  await sendLine(msg);
+  showLoading(false);
   closeConfirm(); closeModal();
   renderCalendar();
   showToast('🗑️ 予約をキャンセルしました', 'cancel');
@@ -1011,17 +1085,24 @@ function renderArtistList() {
   });
 }
 
-function approveArtist(id) {
+async function approveArtist(id) {
   artists[id].status = 'approved';
-  saveArtists(); updatePendingBadge(); renderArtistList();
+  showLoading(true);
+  await saveArtist({ id, status: 'approved' }, true);
   const a = artists[id];
-  sendLineNotify(`【✅ 審査承認】\n${a.artist||a.name}（${a.name}）さんが承認されました。\n💬 LINE: ${a.lineId||'—'}\n予約が可能になりました。`);
+  await sendLine(`【✅ 審査承認】\n${a.artist||a.name}（${a.name}）さんが承認されました。\n💬 LINE: ${a.lineId||'—'}\n予約が可能になりました。`);
+  showLoading(false);
+  updatePendingBadge(); renderArtistList();
   showToast(`✅ ${a.artist||a.name} を承認しました`, 'success');
 }
-function rejectArtist(id) {
+async function rejectArtist(id) {
   const a = artists[id];
   if (confirm(`「${a.artist||a.name}」を却下・削除しますか？`)) {
-    delete artists[id]; saveArtists(); updatePendingBadge(); renderArtistList();
+    delete artists[id];
+    showLoading(true);
+    await apiPost({ action: 'delete', sheet: 'artists', key: id });
+    showLoading(false);
+    updatePendingBadge(); renderArtistList();
     showToast('🗑️ 却下しました', 'cancel');
   }
 }
@@ -1045,31 +1126,6 @@ function renderResList() {
       <button class="res-cancel-btn" onclick="confirmCancel('${res.id}','${safeName}','${slot.time}')">キャンセル</button>`;
     list.appendChild(item);
   });
-}
-
-// ===== LINE =====
-function sendLineNotify(message) {
-  const token = document.getElementById('lineToken').value.trim();
-  if (!token) return;
-  fetch('https://notify-api.line.me/api/notify', {
-    method:'POST',
-    headers:{ 'Authorization':`Bearer ${token}`, 'Content-Type':'application/x-www-form-urlencoded' },
-    body:`message=${encodeURIComponent(message)}`,
-  }).catch(() => console.log('LINE通知:', message));
-}
-function updateLineStatus() {
-  const token = document.getElementById('lineToken').value.trim();
-  const el    = document.getElementById('lineStatus');
-  el.textContent = token ? '✅ 設定済み' : '未設定';
-  el.className = 'line-status' + (token ? ' active' : '');
-}
-
-// ===== TOAST =====
-function showToast(msg, type='') {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.className = 'toast show' + (type ? ' '+type : '');
-  setTimeout(() => t.className = 'toast', 3500);
 }
 
 // ===== HELPERS =====
