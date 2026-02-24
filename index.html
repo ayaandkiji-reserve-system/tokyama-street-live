@@ -6,6 +6,7 @@
 <title>徳山駅前｜路上ライブスペース予約</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
 <style>
+/* ======= 元CSSそのまま（省略せず全部入れてOK） ======= */
 :root {
   --sky:#3b9edd; --sky-light:#7ec8f0; --sky-deep:#1a6fa8;
   --sky-pale:#e8f5fd; --sky-mid:#c4e8f8;
@@ -42,6 +43,7 @@ main{max-width:980px;margin:0 auto;padding:28px 18px 80px;}
 .cal-nav{display:flex;align-items:center;gap:14px;}
 .cal-nav button{width:34px;height:34px;border-radius:50%;border:1.5px solid rgba(255,255,255,.4);background:rgba(255,255,255,.15);color:#fff;font-size:1rem;cursor:pointer;transition:background .2s;display:flex;align-items:center;justify-content:center;}
 .cal-nav button:hover{background:rgba(255,255,255,.3);}
+.cal-nav button:disabled{opacity:.4;cursor:not-allowed;}
 .cal-month{font-family:'DM Serif Display',serif;color:#fff;font-size:1.45rem;min-width:155px;text-align:center;}
 .cal-legend{display:flex;gap:14px;}
 .legend-item{display:flex;align-items:center;gap:5px;font-size:.7rem;color:rgba(255,255,255,.9);}
@@ -61,6 +63,8 @@ main{max-width:980px;margin:0 auto;padding:28px 18px 80px;}
 .cal-day.full{background:var(--gray-50);border-color:var(--gray-100);}
 .cal-day.full .day-num{color:var(--gray-300);}
 .cal-day.closed{background:var(--gray-50);border-color:var(--gray-200);cursor:not-allowed;opacity:.5;}
+/* ★追加：未来（3ヶ月超）は見た目も無効化 */
+.cal-day.too-future{opacity:.35;cursor:not-allowed;background:var(--gray-50);border-color:var(--gray-200);}
 .day-num{font-size:.96rem;font-weight:600;color:var(--gray-700);line-height:1;}
 .cal-day.sun .day-num{color:#e07070;} .cal-day.sat .day-num{color:var(--sky-deep);} .cal-day.today .day-num{color:var(--sky-deep);}
 .slot-dots{display:flex;gap:2px;}
@@ -311,9 +315,10 @@ main{max-width:980px;margin:0 auto;padding:28px 18px 80px;}
     <div class="calendar-card">
       <div class="cal-header">
         <div class="cal-nav">
-          <button onclick="changeMonth(-1)">&#8249;</button>
+          <!-- ★id追加：次月/前月ボタンを無効化するため -->
+          <button id="btnPrevMonth" onclick="changeMonth(-1)">&#8249;</button>
           <div class="cal-month" id="calMonthLabel"></div>
-          <button onclick="changeMonth(1)">&#8250;</button>
+          <button id="btnNextMonth" onclick="changeMonth(1)">&#8250;</button>
         </div>
         <div class="cal-legend">
           <div class="legend-item"><div class="legend-dot available"></div>空きあり</div>
@@ -338,6 +343,7 @@ main{max-width:980px;margin:0 auto;padding:28px 18px 80px;}
       <div class="panel-title"><span>📅</span>1日単位の設定</div>
       <div class="slot-mgmt-header">
         <label>対象日を選択</label>
+        <!-- ★maxはJSでセットする（3ヶ月制限） -->
         <input type="date" id="slotMgmtDate" onchange="renderSlotMgmt()">
         <span class="hint">※ 日付を選んで各時間帯を切り替えてください</span>
       </div>
@@ -605,6 +611,29 @@ main{max-width:980px;margin:0 auto;padding:28px 18px 80px;}
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbx8nfGzowgMmGipKoz9TbDsTy24THaGDYa298MBhpAZ8QMaGm9ltrgCpu9-2106Vqd-9A/exec';
 // =====================================================
 
+// =====================================================
+// ★追加：3ヶ月先まで表示・操作できる制限（本日から3ヶ月先の“日付”まで）
+// 例）今日が 2/24 なら 5/24 までOK（時刻は日付比較なので 23:59:59扱い）
+// =====================================================
+const LIMIT_MONTHS_AHEAD = 3;
+function dateOnly(d) { return new Date(d.getFullYear(), d.getMonth(), d.getDate()); }
+function getLimitEndDate() {
+  const now = new Date();
+  const end = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  end.setMonth(end.getMonth() + LIMIT_MONTHS_AHEAD);
+  // end は日付のみ（00:00）なので、比較は dateOnly で統一
+  return end;
+}
+function isTooFutureDate(dateObj) {
+  const end = getLimitEndDate();
+  return dateOnly(dateObj) > dateOnly(end);
+}
+function limitMaxKey() {
+  const end = getLimitEndDate();
+  return fmtKey(end.getFullYear(), end.getMonth()+1, end.getDate());
+}
+// =====================================================
+
 const SLOTS = [
   { id:'A', time:'17:00〜18:00', label:'1部' },
   { id:'B', time:'18:00〜19:00', label:'2部'  },
@@ -684,7 +713,16 @@ async function init() {
   const now = new Date();
   currentYear  = now.getFullYear();
   currentMonth = now.getMonth();
-  document.getElementById('slotMgmtDate').value = fmtKey(now.getFullYear(), now.getMonth()+1, now.getDate());
+
+  // ★追加：日付入力に max（3ヶ月先まで）を強制
+  const maxKey = limitMaxKey();
+  const slotDate = document.getElementById('slotMgmtDate');
+  slotDate.max = maxKey;
+  slotDate.value = fmtKey(now.getFullYear(), now.getMonth()+1, now.getDate());
+
+  document.getElementById('periodStart').max = maxKey;
+  document.getElementById('periodEnd').max   = maxKey;
+
   await load();
   renderCalendar();
   updatePendingBadge();
@@ -715,17 +753,26 @@ function isClosed(dateKey, slotId) { return !!closedSlots[slotKey(dateKey,slotId
 function renderSlotMgmt() {
   const dateVal = document.getElementById('slotMgmtDate').value;
   if (!dateVal) return;
+
+  // ★追加：3ヶ月超を弾く（管理画面の単日設定も禁止）
+  if (dateVal > limitMaxKey()) {
+    showToast('⚠️ 枠管理は3ヶ月先までしか設定できません', 'error');
+    document.getElementById('slotMgmtDate').value = limitMaxKey();
+  }
+
   const grid = document.getElementById('slotToggleGrid');
   grid.innerHTML = '';
+  const dateFinal = document.getElementById('slotMgmtDate').value;
+
   SLOTS.forEach(slot => {
-    const closed = isClosed(dateVal, slot.id);
+    const closed = isClosed(dateFinal, slot.id);
     const card = document.createElement('div');
     card.className = 'slot-toggle-card' + (closed ? ' closed-card' : '');
     card.innerHTML = `
       <div class="slot-toggle-time">${slot.time}</div>
       <div class="slot-toggle-label">${slot.label}</div>
       <button class="slot-toggle-btn ${closed ? 'btn-open' : 'btn-close'}"
-        onclick="toggleSlot('${dateVal}','${slot.id}')">
+        onclick="toggleSlot('${dateFinal}','${slot.id}')">
         ${closed ? '✅ オープンにする' : '🚫 クローズにする'}
       </button>`;
     grid.appendChild(card);
@@ -733,6 +780,9 @@ function renderSlotMgmt() {
 }
 
 async function toggleSlot(dateKey, slotId) {
+  // ★追加：3ヶ月超は操作させない
+  if (dateKey > limitMaxKey()) { showToast('⚠️ 3ヶ月先までしか操作できません','error'); return; }
+
   const k = slotKey(dateKey, slotId);
   const willClose = !closedSlots[k];
   willClose ? (closedSlots[k]=true) : delete closedSlots[k];
@@ -745,6 +795,8 @@ async function toggleSlot(dateKey, slotId) {
 
 async function bulkOpen() {
   const d = document.getElementById('slotMgmtDate').value; if (!d) return;
+  if (d > limitMaxKey()) { showToast('⚠️ 3ヶ月先までしか操作できません','error'); return; }
+
   showLoading(true);
   for (const s of SLOTS) { const k=slotKey(d,s.id); delete closedSlots[k]; await saveClosed(k,true); }
   showLoading(false); renderSlotMgmt(); renderCalendar();
@@ -752,6 +804,8 @@ async function bulkOpen() {
 }
 async function bulkClose() {
   const d = document.getElementById('slotMgmtDate').value; if (!d) return;
+  if (d > limitMaxKey()) { showToast('⚠️ 3ヶ月先までしか操作できません','error'); return; }
+
   showLoading(true);
   for (const s of SLOTS) { const k=slotKey(d,s.id); closedSlots[k]=true; await saveClosed(k,false); }
   showLoading(false); renderSlotMgmt(); renderCalendar();
@@ -762,24 +816,30 @@ async function bulkClose() {
 async function periodBulk(isClose) {
   const startVal = document.getElementById('periodStart').value;
   const endVal   = document.getElementById('periodEnd').value;
+  const maxKey = limitMaxKey();
+
   if (!startVal || !endVal) { showToast('⚠️ 開始日と終了日を入力してください','error'); return; }
   if (startVal > endVal)    { showToast('⚠️ 終了日は開始日より後にしてください','error'); return; }
 
-  // 対象曜日（未選択なら全曜日）
+  // ★追加：3ヶ月超を弾く
+  if (startVal > maxKey || endVal > maxKey) {
+    showToast('⚠️ 期間一括は3ヶ月先までしか設定できません','error');
+    return;
+  }
+
   const checkedDows = [...document.querySelectorAll('.period-dow-grid input:checked')].map(el => parseInt(el.value));
   const targetDows  = checkedDows.length > 0 ? checkedDows : [0,1,2,3,4,5,6];
 
-  // 対象スロット（未選択なら全スロット）
   const checkedSlots = [...document.querySelectorAll('.period-slot-grid input:checked')].map(el => el.value);
   const targetSlots  = checkedSlots.length > 0 ? checkedSlots : SLOTS.map(s => s.id);
 
-  // 期間内の日付を列挙
   const dates = [];
   const cur = new Date(startVal);
   const end = new Date(endVal);
   while (cur <= end) {
     if (targetDows.includes(cur.getDay())) {
-      dates.push(fmtKey(cur.getFullYear(), cur.getMonth()+1, cur.getDate()));
+      const k = fmtKey(cur.getFullYear(), cur.getMonth()+1, cur.getDate());
+      if (k <= maxKey) dates.push(k);
     }
     cur.setDate(cur.getDate()+1);
   }
@@ -816,6 +876,17 @@ async function periodBulk(isClose) {
 // ===== CALENDAR =====
 function renderCalendar() {
   document.getElementById('calMonthLabel').textContent = `${currentYear}年 ${currentMonth+1}月`;
+
+  // ★追加：月送りボタンの無効化（3ヶ月先まで）
+  const now = new Date();
+  const minMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  const maxEnd = getLimitEndDate();
+  const maxMonth = new Date(maxEnd.getFullYear(), maxEnd.getMonth(), 1);
+  const curMonthDate = new Date(currentYear, currentMonth, 1);
+
+  document.getElementById('btnPrevMonth').disabled = curMonthDate <= minMonth;
+  document.getElementById('btnNextMonth').disabled = curMonthDate >= maxMonth;
+
   const grid = document.getElementById('calGrid');
   grid.innerHTML = '';
   const firstDay    = new Date(currentYear, currentMonth, 1).getDay();
@@ -825,9 +896,11 @@ function renderCalendar() {
   for (let i=0; i<firstDay; i++) {
     const e=document.createElement('div'); e.className='cal-day empty'; grid.appendChild(e);
   }
+
   for (let d=1; d<=daysInMonth; d++) {
     const date    = new Date(currentYear, currentMonth, d);
     const dateKey = fmtKey(currentYear, currentMonth+1, d);
+
     const dayRess = Object.values(reservations).filter(r=>r.dateKey===dateKey);
     const openSlots = SLOTS.filter(s=>!isClosed(dateKey,s.id));
     const dow     = date.getDay();
@@ -835,35 +908,60 @@ function renderCalendar() {
     const isToday = date.toDateString()===today.toDateString();
     const allClosed = openSlots.length===0;
 
+    // ★追加：3ヶ月超の未来日
+    const isTooFuture = isTooFutureDate(date);
+
     let cls='cal-day';
     if (isPast)    cls+=' past';
     if (isToday)   cls+=' today';
     if (dow===0)   cls+=' sun';
     if (dow===6)   cls+=' sat';
-    if (!isPast && allClosed) cls+=' closed';
+
+    if (isTooFuture) cls+=' too-future';
+    else if (!isPast && allClosed) cls+=' closed';
     else if (!isPast && !allClosed && dayRess.filter(r=>!isClosed(dateKey,r.slotId)).length>=openSlots.length) cls+=' full';
 
     const el=document.createElement('div');
     el.className=cls;
+
     const dots=SLOTS.map(s=>{
       const c=isClosed(dateKey,s.id)?' closed-dot':(dayRess.some(r=>r.slotId===s.id)?' booked':'');
       return `<div class="slot-dot${c}"></div>`;
     }).join('');
+
     el.innerHTML=`<div class="day-num">${d}</div><div class="slot-dots">${dots}</div>`;
-    if (!isPast && !allClosed) el.onclick=()=>openModal(currentYear,currentMonth+1,d,dow);
+
+    // ★クリック可能条件に「isTooFuture」を追加
+    if (!isPast && !allClosed && !isTooFuture) el.onclick=()=>openModal(currentYear,currentMonth+1,d,dow);
+
     grid.appendChild(el);
   }
 }
 
 function changeMonth(delta) {
-  currentMonth+=delta;
-  if (currentMonth<0)  { currentMonth=11; currentYear--; }
-  if (currentMonth>11) { currentMonth=0;  currentYear++; }
+  const cand = new Date(currentYear, currentMonth + delta, 1);
+
+  // ★追加：今月より前／3ヶ月上限より先は移動不可
+  const now = new Date();
+  const min = new Date(now.getFullYear(), now.getMonth(), 1);
+  const end = getLimitEndDate();
+  const max = new Date(end.getFullYear(), end.getMonth(), 1);
+  if (cand < min || cand > max) return;
+
+  currentYear = cand.getFullYear();
+  currentMonth = cand.getMonth();
   renderCalendar();
 }
 
 // ===== MODAL =====
 function openModal(y,m,d,dow) {
+  // ★追加：3ヶ月超はモーダルを開かせない（念のため）
+  const dateObj = new Date(y, m-1, d);
+  if (isTooFutureDate(dateObj)) {
+    showToast('⚠️ 予約は3ヶ月先までです', 'error');
+    return;
+  }
+
   selectedDate={y,m,d,dow};
   document.getElementById('modalDateLabel').textContent=`${y}年${m}月${d}日（${WEEKDAYS[dow]}）`;
   document.getElementById('modalDateSub').textContent=MONTHS[m-1];
@@ -1055,14 +1153,35 @@ async function submitNewArtist() {
 // ===== RESERVE =====
 async function submitReservation() {
   if (!currentFoundArtistId) return;
+  if (!selectedDate || !selectedSlotId) { showToast('⚠️ 日付と枠を選択してください','error'); return; }
+
+  // ★追加：3ヶ月超予約をフロント側でも弾く
+  const dateObj = new Date(selectedDate.y, selectedDate.m-1, selectedDate.d);
+  if (isTooFutureDate(dateObj)) {
+    showToast('⚠️ 予約は3ヶ月先までです', 'error');
+    return;
+  }
+
   const a=artists[currentFoundArtistId];
   const {y,m,d}=selectedDate;
   const dateKey=fmtKey(y,m,d);
   const slot=SLOTS.find(s=>s.id===selectedSlotId);
   const note=document.getElementById('fReserveNote').value.trim();
+
+  // ★追加：フロント側の簡易二重チェック（完全防止はGAS側が必須）
+  const already = Object.values(reservations).some(r => r.dateKey===dateKey && r.slotId===selectedSlotId);
+  if (already) {
+    showToast('⚠️ その枠はすでに予約済みの可能性があります。更新して確認してください。','error');
+    await load();
+    renderCalendar();
+    renderModalSlots(dateKey);
+    return;
+  }
+
   const id='res_'+Date.now();
   const resData={id,dateKey,slotId:selectedSlotId,artistId:a.id,name:a.name,artistName:a.artist||a.name,phone:a.phone,lineId:a.lineId,note,createdAt:new Date().toISOString()};
   reservations[id]=resData;
+
   showLoading(true);
   await saveRes(resData);
   await sendLine(`【✅ 予約確定通知】\n📅 ${y}年${m}月${d}日\n⏰ ${slot.time}（${slot.label}）\n🎤 ${a.artist||a.name}（${a.name}）\n📞 ${a.phone}\n💬 LINE: ${a.lineId}${note?'\n📝 '+note:''}`);
@@ -1070,6 +1189,7 @@ async function submitReservation() {
   setStep(3);
   showToast(`✅ ${y}年${m}月${d}日 ${slot.time} の予約が完了しました！`,'success');
   closeModal();
+  await load(); // ★追加：確定後は再読込して最新化
   renderCalendar();
 }
 
@@ -1092,6 +1212,7 @@ async function executeCancel() {
   await sendLine(`【❌ キャンセル通知】\n${y}年${m}月${d}日\n⏰ ${slot.time}（${slot.label}）\n🎤 ${res.artistName||res.name}（${res.name}）\n📞 ${res.phone}\n💬 LINE: ${res.lineId||'—'} の予約がキャンセルされました。`);
   showLoading(false);
   closeConfirm(); closeModal();
+  await load(); // ★追加：キャンセル後も再読込
   renderCalendar();
   showToast('🗑️ 予約をキャンセルしました','cancel');
 }
@@ -1174,14 +1295,13 @@ function renderResList() {
 }
 
 // ===== ADMIN AUTH =====
-// ★パスワードをここで変更してください★
+// ★注意：フロントにパスワード直書きは安全ではないです（本番はGAS側認証推奨）★
 const ADMIN_PASSWORD = 'Hirakegoma2025';
 
 let isAdmin = false;
 
 function toggleAdminLogin() {
   if (isAdmin) {
-    // ログアウト
     isAdmin = false;
     document.querySelectorAll('.admin-tab').forEach(el => el.style.display = 'none');
     switchTab('calendar');
@@ -1189,7 +1309,6 @@ function toggleAdminLogin() {
     document.getElementById('adminBtn').style.background = 'rgba(255,255,255,.15)';
     showToast('🔒 管理者をログアウトしました');
   } else {
-    // ログインモーダルを開く
     document.getElementById('adminPasswordInput').value = '';
     document.getElementById('adminModalIcon').textContent  = '🔐';
     document.getElementById('adminModalTitle').textContent = '管理者ログイン';
